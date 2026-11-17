@@ -2,12 +2,21 @@
   "location": {
     "type": "entry",
     "default": "52.9667,11.15",
-    "description": "GPS: Breitengrad,Längengrad (z.B. 52.52,13.405)"
+    "description": "GPS: Breitengrad,Längengrad (z. B. 52.52,13.405)"
   },
   "location-name": {
     "type": "entry",
     "default": "Lüchow",
-    "description": "Display name (e.g. Berlin)"
+    "description": "Anzeigename (z. B. Berlin)"
+  },
+  "weather-provider": {
+    "type": "combobox",
+    "default": "open-meteo",
+    "options": {
+      "open-meteo": "Open-Meteo (kostenlos)",
+      "wttr-in": "wttr.in (kostenlos)"
+    },
+    "description": "Wetterdienst"
   },
   "temperature-unit": {
     "type": "combobox",
@@ -16,7 +25,7 @@
       "celsius": "°C (Celsius)",
       "fahrenheit": "°F (Fahrenheit)"
     },
-    "description": "Temperature unit"
+    "description": "Temperatureinheit"
   },
   "wind-unit": {
     "type": "combobox",
@@ -26,7 +35,7 @@
       "ms": "m/s",
       "mph": "mph"
     },
-    "description": "Wind speed unit"
+    "description": "Windeinheit"
   },
   "update-interval": {
     "type": "spinbutton",
@@ -34,48 +43,48 @@
     "min": 5,
     "max": 60,
     "step": 5,
-    "units": "minutes",
-    "description": "Auto-update interval"
+    "units": "Minuten",
+    "description": "Aktualisierungsintervall"
   },
   "show-humidity": {
     "type": "checkbox",
     "default": true,
-    "description": "Show humidity"
+    "description": "Luftfeuchtigkeit anzeigen"
   },
   "show-pressure": {
     "type": "checkbox",
     "default": true,
-    "description": "Show atmospheric pressure"
+    "description": "Luftdruck anzeigen"
   },
   "show-uv-index": {
     "type": "checkbox",
     "default": true,
-    "description": "Show UV index"
+    "description": "UV-Index anzeigen"
   },
   "show-precipitation": {
     "type": "checkbox",
     "default": true,
-    "description": "Show precipitation probability"
+    "description": "Niederschlagswahrscheinlichkeit anzeigen"
   },
   "show-sunrise-sunset": {
     "type": "checkbox",
     "default": true,
-    "description": "Show sunrise and sunset times"
+    "description": "Sonnenauf- und -untergang anzeigen"
   },
   "compact-mode": {
     "type": "checkbox",
     "default": false,
-    "description": "Compact layout (less data)"
+    "description": "Kompakte Darstellung (weniger Daten)"
   },
   "text-color": {
     "type": "colorchooser",
     "default": "#ffffff",
-    "description": "Text color"
+    "description": "Textfarbe"
   },
   "bg-color": {
     "type": "colorchooser",
     "default": "#1a1a1a",
-    "description": "Background color"
+    "description": "Hintergrundfarbe"
   },
   "opacity": {
     "type": "spinbutton",
@@ -84,6 +93,6 @@
     "max": 100,
     "step": 10,
     "units": "%",
-    "description": "Background opacity"
+    "description": "Deckkraft des Hintergrunds"
   }
 }

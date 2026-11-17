@@ -51,4 +51,4 @@ Falls Daten nicht laden:
 
 ## Version
 
-v1.1.1 - Einstellungen und GitHub-Updatefunktion
+v1.2.0 - Wetterdienst-Auswahl, deutsche Einstellungen und Anzeigeoptionen

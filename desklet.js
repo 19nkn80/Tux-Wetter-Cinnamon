@@ -7,7 +7,7 @@ const Settings = imports.ui.settings;
 
 const REPOSITORY = '19nkn80/Tux-Wetter-Cinnamon';
 const RAW_BASE_URL = 'https://raw.githubusercontent.com/' + REPOSITORY + '/main/';
-const LOCAL_VERSION = '1.1.1';
+const LOCAL_VERSION = '1.2.0';
 
 class TuxWetterDesklet extends Desklet.Desklet {
     constructor(metadata, desklet_id) {
@@ -18,22 +18,36 @@ class TuxWetterDesklet extends Desklet.Desklet {
         this.updateInterval = 30;
         this.temperatureUnit = 'celsius';
         this.windUnit = 'kmh';
+        this.weatherProvider = 'open-meteo';
         this.showHumidity = true;
+        this.showPressure = true;
+        this.showUvIndex = true;
         this.showPrecipitation = true;
         this.showSunriseSunset = true;
+        this.compactMode = false;
+        this.textColor = '#ffffff';
+        this.bgColor = '#16161d';
+        this.opacity = 92;
         this.settings = new Settings.DeskletSettings(this, this.metadata.uuid, desklet_id);
         this.settings.bind('location', 'location', this._onSettingsChanged.bind(this));
         this.settings.bind('location-name', 'locationName', this._onSettingsChanged.bind(this));
         this.settings.bind('temperature-unit', 'temperatureUnit', this._onSettingsChanged.bind(this));
         this.settings.bind('wind-unit', 'windUnit', this._onSettingsChanged.bind(this));
+        this.settings.bind('weather-provider', 'weatherProvider', this._onSettingsChanged.bind(this));
         this.settings.bind('update-interval', 'updateInterval', this._onSettingsChanged.bind(this));
         this.settings.bind('show-humidity', 'showHumidity', this._onSettingsChanged.bind(this));
+        this.settings.bind('show-pressure', 'showPressure', this._onSettingsChanged.bind(this));
+        this.settings.bind('show-uv-index', 'showUvIndex', this._onSettingsChanged.bind(this));
         this.settings.bind('show-precipitation', 'showPrecipitation', this._onSettingsChanged.bind(this));
         this.settings.bind('show-sunrise-sunset', 'showSunriseSunset', this._onSettingsChanged.bind(this));
+        this.settings.bind('compact-mode', 'compactMode', this._onSettingsChanged.bind(this));
+        this.settings.bind('text-color', 'textColor', this._onSettingsChanged.bind(this));
+        this.settings.bind('bg-color', 'bgColor', this._onSettingsChanged.bind(this));
+        this.settings.bind('opacity', 'opacity', this._onSettingsChanged.bind(this));
         
         this.mainBox = new St.BoxLayout({
             vertical: true, 
-            style: 'background-color: rgba(82, 45, 130, 0.97); padding: 20px; border-radius: 12px; color: #fff; width: 390px; border: 1px solid rgba(210, 70, 220, 0.9);'
+            style: 'background-color: rgba(22, 22, 29, 0.92); padding: 20px; border-radius: 12px; color: #fff; width: 390px; border: 1px solid rgba(150, 70, 180, 0.9);'
         });
         
         const headerBox = new St.BoxLayout({vertical: false, style: 'margin-bottom: 16px;'});
@@ -59,6 +73,8 @@ class TuxWetterDesklet extends Desklet.Desklet {
         metricsBox.add(this.rainLabel);
         this.humidLabel = new St.Label({text: '--%', style: 'font-size: 13px; color: #00d9ff; font-weight: bold;'});
         metricsBox.add(this.humidLabel);
+        this.pressureLabel = new St.Label({text: '-- hPa', style: 'font-size: 11px; color: #d0d0d0; margin-top: 5px;'});
+        headerRight.add(this.pressureLabel);
         headerRight.add(metricsBox);
         
         this.feelsLabel = new St.Label({text: 'gefühlt --°C', style: 'font-size: 13px; color: #e8e8e8; margin-top: 12px; font-weight: 600;'});
@@ -77,6 +93,7 @@ class TuxWetterDesklet extends Desklet.Desklet {
         this.mainBox.add(hourlyLabel);
         
         const hourlyBox = new St.BoxLayout({vertical: false, style: 'margin-bottom: 10px;'});
+        this.hourlyBox = hourlyBox;
         this.hourlyLabels = [];
         for (let i = 0; i < 6; i++) {
             const h = new St.BoxLayout({vertical: true, style: 'margin-right: 14px;'});
@@ -108,6 +125,7 @@ class TuxWetterDesklet extends Desklet.Desklet {
         this.mainBox.add(dailyLabel);
         
         const dailyBox = new St.BoxLayout({vertical: false});
+        this.dailyBox = dailyBox;
         this.dailyLabels = [];
         const days = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'];
         for (let i = 0; i < 7; i++) {
@@ -140,11 +158,29 @@ class TuxWetterDesklet extends Desklet.Desklet {
         if (!this.locationLabel) return;
         this.locationLabel.set_text(this.locationName || 'Lüchow');
         this.humidLabel.visible = this.showHumidity;
+        this.pressureLabel.visible = this.showPressure;
+        this.uvLabel.visible = this.showUvIndex;
         this.rainLabel.visible = this.showPrecipitation;
         this.sunriseLabel.visible = this.showSunriseSunset;
         this.sunsetLabel.visible = this.showSunriseSunset;
+        this.hourlyBox.visible = !this.compactMode;
+        this.dailyBox.visible = !this.compactMode;
+        this._applyAppearance();
         this._restartUpdateTimer();
         this._fetchData();
+    }
+
+    _applyAppearance() {
+        const color = String(this.bgColor || '#16161d');
+        const opacity = Math.max(0, Math.min(100, Number(this.opacity) || 92)) / 100;
+        if (/^#[0-9a-fA-F]{6}$/.test(color)) {
+            const red = parseInt(color.substring(1, 3), 16);
+            const green = parseInt(color.substring(3, 5), 16);
+            const blue = parseInt(color.substring(5, 7), 16);
+            this.mainBox.style = 'background-color: rgba(' + red + ', ' + green + ', ' + blue + ', ' +
+                opacity + '); padding: 20px; border-radius: 12px; width: 390px; border: 1px solid rgba(150, 70, 180, 0.9);';
+        }
+        this.mainBox.style = this.mainBox.style + 'color: ' + String(this.textColor || '#ffffff') + ';';
     }
 
     _restartUpdateTimer() {
@@ -244,18 +280,66 @@ class TuxWetterDesklet extends Desklet.Desklet {
         return descs[code] || 'Unbekannt';
     }
 
+    _codeFromText(text) {
+        const value = String(text || '').toLowerCase();
+        if (value.indexOf('thunder') >= 0 || value.indexOf('gewitter') >= 0) return 95;
+        if (value.indexOf('snow') >= 0 || value.indexOf('schnee') >= 0) return 71;
+        if (value.indexOf('rain') >= 0 || value.indexOf('regen') >= 0 ||
+            value.indexOf('drizzle') >= 0) return 61;
+        if (value.indexOf('fog') >= 0 || value.indexOf('nebel') >= 0) return 45;
+        if (value.indexOf('cloud') >= 0 || value.indexOf('bewölkt') >= 0) return 2;
+        return 0;
+    }
+
+    _normalizeWttr(data) {
+        const current = data.current_condition[0];
+        const today = data.weather[0];
+        const hourly = today.hourly.slice(0, 6);
+        const weather = data.weather.slice(0, 7);
+        return {
+            current: {
+                temperature_2m: Number(current.temp_C),
+                relative_humidity_2m: Number(current.humidity),
+                apparent_temperature: Number(current.FeelsLikeC),
+                weather_code: this._codeFromText(current.weatherDesc[0].value),
+                wind_speed_10m: Number(current.windspeedKmph),
+                precipitation_probability: Number(current.chanceofrain || 0),
+                uv_index: Number(current.uvIndex || 0),
+                pressure_msl: Number(current.pressure)
+            },
+            hourly: {
+                temperature_2m: hourly.map((entry) => Number(entry.tempC)),
+                weather_code: hourly.map((entry) => this._codeFromText(entry.weatherDesc[0].value))
+            },
+            daily: {
+                weather_code: weather.map((entry) => this._codeFromText(entry.hourly[4].weatherDesc[0].value)),
+                temperature_2m_max: weather.map((entry) => Number(entry.maxtempC)),
+                temperature_2m_min: weather.map((entry) => Number(entry.mintempC)),
+                precipitation_probability_max: weather.map((entry) => Number(entry.hourly[4].chanceofrain || 0)),
+                sunrise: [today.astronomy[0].sunrise],
+                sunset: [today.astronomy[0].sunset]
+            }
+        };
+    }
+
     _fetchData() {
         try {
             const coordinates = String(this.location || '52.52,13.405').split(',');
             if (coordinates.length !== 2) throw new Error('Ungültiger Standort');
             const latitude = encodeURIComponent(coordinates[0].trim());
             const longitude = encodeURIComponent(coordinates[1].trim());
-            const cmd = `curl -s "https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m,precipitation_probability,uv_index&hourly=temperature_2m,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,sunrise,sunset&timezone=auto&forecast_days=7"`;
+            let cmd;
+            if (this.weatherProvider === 'wttr-in') {
+                cmd = `curl -s "https://wttr.in/${latitude},${longitude}?format=j1"`;
+            } else {
+                cmd = `curl -s "https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m,precipitation_probability,uv_index,pressure_msl&hourly=temperature_2m,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,sunrise,sunset&timezone=auto&forecast_days=7"`;
+            }
             
             let [ok, out] = GLib.spawn_command_line_sync(cmd);
             if (!ok || !out) return;
             
             let j = JSON.parse(out.toString());
+            if (this.weatherProvider === 'wttr-in') j = this._normalizeWttr(j);
             if (!j.current) return;
             
             let c = j.current;
@@ -264,6 +348,7 @@ class TuxWetterDesklet extends Desklet.Desklet {
             this.windLabel.set_text(this._formatWind(c.wind_speed_10m));
             this.rainLabel.set_text(Math.round(c.precipitation_probability) + '%');
             this.humidLabel.set_text(c.relative_humidity_2m + '%');
+            this.pressureLabel.set_text(Math.round(c.pressure_msl || 0) + ' hPa');
             this.feelsLabel.set_text('gefühlt ' + this._formatTemperature(c.apparent_temperature));
             this.uvLabel.set_text('☀️ UV ' + Math.round(c.uv_index));
             
