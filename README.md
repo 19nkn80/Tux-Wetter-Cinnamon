@@ -58,4 +58,4 @@ Falls Daten nicht laden:
 
 ## Version
 
-v1.11.0 - Skalierbare Karte und flüssige Einstellungen ohne blockierende Sofortabfrage
+v1.12.0 - Initialer Datenabruf beim Start und kontrastreichere Verläufe

@@ -9,7 +9,7 @@ const Settings = imports.ui.settings;
 
 const REPOSITORY = '19nkn80/Tux-Wetter-Cinnamon';
 const RAW_BASE_URL = 'https://raw.githubusercontent.com/' + REPOSITORY + '/main/';
-const LOCAL_VERSION = '1.11.0';
+const LOCAL_VERSION = '1.12.0';
 
 class TuxWetterDesklet extends Desklet.Desklet {
     constructor(metadata, desklet_id) {
@@ -294,12 +294,12 @@ class TuxWetterDesklet extends Desklet.Desklet {
 
     _getTheme() {
         const themes = {
-            nacht: ['#332344', '#303c9e'],
-            violett: ['#74356f', '#3d55c9'],
-            ozean: ['#174f76', '#1966c3'],
-            smaragd: ['#24705e', '#2352b8'],
-            sonnenuntergang: ['#8d3b59', '#b05292'],
-            schiefer: ['#3d4d74', '#3a68bd']
+            nacht: ['#6b315f', '#263ec2'],
+            violett: ['#9b3d72', '#354bd4'],
+            ozean: ['#126b9b', '#1649c7'],
+            smaragd: ['#1e946f', '#214acb'],
+            sonnenuntergang: ['#c04d61', '#6c43c7'],
+            schiefer: ['#52658d', '#2d4dca']
         };
         return themes[this.colorTheme] || themes.nacht;
     }
@@ -856,12 +856,14 @@ class TuxWetterDesklet extends Desklet.Desklet {
                 }
             }
         } catch (e) {
+            global.logError('TuX-Wetter Datenabruf: ' + e);
             this.descLabel.set_text('Fehler');
         }
     }
 
     on_desklet_added_to_desktop() {
         this._onSettingsChanged();
+        this._fetchData();
     }
 
     on_desklet_removed() {
