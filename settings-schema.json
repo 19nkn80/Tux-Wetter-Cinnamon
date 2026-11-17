@@ -19,6 +19,11 @@
     "description": "Standort suchen und speichern",
     "callback": "on_location_search_pressed"
   },
+  "auto-location": {
+    "type": "button",
+    "description": "Standort automatisch über IP bestimmen",
+    "callback": "on_auto_location_pressed"
+  },
   "saved-locations": {
     "type": "list",
     "description": "Gespeicherte Orte",

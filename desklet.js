@@ -9,7 +9,7 @@ const Settings = imports.ui.settings;
 
 const REPOSITORY = '19nkn80/Tux-Wetter-Cinnamon';
 const RAW_BASE_URL = 'https://raw.githubusercontent.com/' + REPOSITORY + '/main/';
-const LOCAL_VERSION = '1.7.0';
+const LOCAL_VERSION = '1.8.0';
 
 class TuxWetterDesklet extends Desklet.Desklet {
     constructor(metadata, desklet_id) {
@@ -172,6 +172,20 @@ class TuxWetterDesklet extends Desklet.Desklet {
         this.mainBox.add(dailyBox);
         
         this.setContent(this.card);
+        this.card.reactive = true;
+        this.card.connect('scroll-event', (_actor, event) => {
+            const direction = event.get_scroll_direction();
+            if (direction === Clutter.ScrollDirection.UP) this._cycleLocation(-1);
+            if (direction === Clutter.ScrollDirection.DOWN) this._cycleLocation(1);
+            return Clutter.EVENT_STOP;
+        });
+        this.card.connect('button-press-event', (_actor, event) => {
+            if (event.get_button() === 3) {
+                this._cycleLocation(1);
+                return Clutter.EVENT_STOP;
+            }
+            return Clutter.EVENT_PROPAGATE;
+        });
         this.setHeader(_('TuX-Wetter'));
         this._menu.addAction(_('Nach GitHub-Updates suchen'), () => this._checkForUpdate());
         this._menu.addAction(_('GitHub-Projekt öffnen'), () => {
@@ -216,12 +230,12 @@ class TuxWetterDesklet extends Desklet.Desklet {
 
     _getTheme() {
         const themes = {
-            nacht: ['#16161d', '#29263d'],
-            violett: ['#4c1d95', '#7e22ce'],
-            ozean: ['#075985', '#0e7490'],
-            smaragd: ['#064e3b', '#047857'],
-            sonnenuntergang: ['#7c2d12', '#be185d'],
-            schiefer: ['#1e293b', '#475569']
+            nacht: ['#332344', '#303c9e'],
+            violett: ['#74356f', '#3d55c9'],
+            ozean: ['#174f76', '#1966c3'],
+            smaragd: ['#24705e', '#2352b8'],
+            sonnenuntergang: ['#8d3b59', '#b05292'],
+            schiefer: ['#3d4d74', '#3a68bd']
         };
         return themes[this.colorTheme] || themes.nacht;
     }
@@ -244,8 +258,9 @@ class TuxWetterDesklet extends Desklet.Desklet {
         const start = this._hexToRgb(theme[0]);
         const end = this._hexToRgb(theme[1]);
         const gradient = new Cairo.LinearGradient(0, 0, width, height);
-        gradient.addColorStopRGBA(0, start[0], start[1], start[2], 0.96);
-        gradient.addColorStopRGBA(1, end[0], end[1], end[2], 0.96);
+        const alpha = this._backgroundAlpha || 1;
+        gradient.addColorStopRGBA(0, start[0], start[1], start[2], alpha);
+        gradient.addColorStopRGBA(1, end[0], end[1], end[2], alpha);
         const radius = 20;
         cr.newSubPath();
         cr.arc(width - radius, radius, radius, -Math.PI / 2, 0);
@@ -262,8 +277,8 @@ class TuxWetterDesklet extends Desklet.Desklet {
     }
 
     _applyAppearance() {
-        const opacity = Math.max(0, Math.min(100, Number(this.opacity) || 92)) / 100;
-        this.card.opacity = Math.round(opacity * 255);
+        this._backgroundAlpha = Math.max(0.85, Math.min(1, Number(this.opacity) / 100 || 0.92));
+        this.card.opacity = 255;
         this.background.queue_repaint();
     }
 
@@ -280,6 +295,7 @@ class TuxWetterDesklet extends Desklet.Desklet {
                 this._notify(_('Ort nicht gefunden.'));
                 return;
             }
+
             const wanted = query.toLowerCase();
             const place = result.results.find((candidate) =>
                 String(candidate.name).toLowerCase() === wanted
@@ -301,6 +317,22 @@ class TuxWetterDesklet extends Desklet.Desklet {
         } catch (e) {
             global.logError('TuX-Wetter Ortssuche: ' + e);
             this._notify(_('Ortssuche fehlgeschlagen.'));
+        }
+    }
+
+    on_auto_location_pressed() {
+        try {
+            const result = JSON.parse(this._fetchText('https://ipapi.co/json/'));
+            if (!result.latitude || !result.longitude) {
+                throw new Error('IP-Ortung lieferte keine Koordinaten');
+            }
+            const name = result.city || result.country_name || 'Automatischer Standort';
+            this.settings.setValue('location-name', name);
+            this.settings.setValue('location', result.latitude + ',' + result.longitude);
+            this._notify(_('Standort über die IP-Adresse aktualisiert.'));
+        } catch (e) {
+            global.logError('TuX-Wetter automatische Standortsuche: ' + e);
+            this._notify(_('Automatische Standortsuche fehlgeschlagen.'));
         }
     }
 
@@ -327,6 +359,11 @@ class TuxWetterDesklet extends Desklet.Desklet {
         if (this.windUnit === 'ms') return (value / 3.6).toFixed(1) + ' m/s';
         if (this.windUnit === 'mph') return (value / 1.60934).toFixed(1) + ' mph';
         return Math.round(value) + ' km/h';
+    }
+
+    _windArrow(degrees) {
+        const arrows = ['↑', '↗', '→', '↘', '↓', '↙', '←', '↖'];
+        return arrows[Math.round(Number(degrees || 0) / 45) % 8];
     }
 
     _notify(message) {
@@ -509,7 +546,7 @@ class TuxWetterDesklet extends Desklet.Desklet {
             } else if (this.weatherProvider === 'met-no') {
                 cmd = `curl -s -A "TuX-Wetter/1.3" "https://api.met.no/weatherapi/locationforecast/2.0/compact?lat=${latitude}&lon=${longitude}"`;
             } else {
-                cmd = `curl -s "https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m,precipitation_probability,uv_index,pressure_msl&hourly=temperature_2m,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,sunrise,sunset&timezone=auto&forecast_days=7"`;
+                cmd = `curl -s "https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m,wind_direction_10m,precipitation_probability,uv_index,pressure_msl&hourly=temperature_2m,weather_code,precipitation_probability&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,sunrise,sunset&timezone=auto&forecast_days=7"`;
             }
             
             let [ok, out] = GLib.spawn_command_line_sync(cmd);
@@ -521,15 +558,30 @@ class TuxWetterDesklet extends Desklet.Desklet {
             if (!j.current) return;
             
             let c = j.current;
+            let air = null;
+            try {
+                air = JSON.parse(this._fetchText(
+                    'https://air-quality-api.open-meteo.com/v1/air-quality?latitude=' +
+                    latitude + '&longitude=' + longitude +
+                    '&current=european_aqi,pm2_5,pm10&timezone=auto'
+                ));
+            } catch (e) {
+                global.logError('TuX-Wetter Luftqualitätsdaten: ' + e);
+            }
             this.tempLabel.set_text(this._formatTemperature(c.temperature_2m));
             this.descLabel.set_text(this._getDesc(c.weather_code));
-            this.windLabel.set_text(this._formatWind(c.wind_speed_10m));
+            this.windLabel.set_text(
+                this._windArrow(c.wind_direction_10m) + ' ' + this._formatWind(c.wind_speed_10m)
+            );
             this.rainLabel.set_text(Math.round(c.precipitation_probability) + '%');
             this.humidLabel.set_text(c.relative_humidity_2m + '%');
             this.pressureLabel.set_text(Math.round(c.pressure_msl || 0) + ' hPa');
             this.feelsLabel.set_text('gefühlt ' + this._formatTemperature(c.apparent_temperature));
             this.currentIcon.set_text(this._getIcon(c.weather_code));
             this.uvLabel.set_text('🌙 UV: ' + Math.round(c.uv_index));
+            if (air && air.current) {
+                this.airLabel.set_text('Luft: ' + Math.round(air.current.european_aqi));
+            }
             this.feelsLabel.set_text(
                 'gefühlt ' + this._formatTemperature(c.apparent_temperature) + '    ' +
                 (j.daily ? this._formatTemperature(j.daily.temperature_2m_max[0]) : '--') + ' / ' +
@@ -552,6 +604,11 @@ class TuxWetterDesklet extends Desklet.Desklet {
                         this.hourlyLabels[i].t.set_text((h % 24).toString().padStart(2, '0') + ':00');
                         this.hourlyLabels[i].ic.set_text(this._getIcon(j.hourly.weather_code[h]));
                         this.hourlyLabels[i].te.set_text(this._formatTemperature(j.hourly.temperature_2m[h]));
+                        if (i === 0 && j.hourly.precipitation_probability) {
+                            this.rainNowLabel.set_text(
+                                'Regen: ' + Math.round(j.hourly.precipitation_probability[h]) + '%'
+                            );
+                        }
                     }
                 }
             }

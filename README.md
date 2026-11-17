@@ -11,6 +11,8 @@ Ein Weather-Desklet für Cinnamon Desktop Environment 6.6.9+
 ✅ **GitHub-Updates** - Update-Prüfung und Installation über das Kontextmenü
 ✅ **Glas-Karten-Design** - Direkt mit Cairo gezeichneter Verlauf, unabhängig vom Cinnamon-CSS-Theme
 ✅ **Mehrere Orte** - Ortsliste mit Pfeilnavigation und Zahnrad für Einstellungen
+✅ **Zusätzliche Wetterdaten** - Windrichtung, Luftqualitätsindex und Regenwahrscheinlichkeit
+✅ **Ortssteuerung** - Pfeile, Mausrad, Rechtsklick und automatische IP-Ortung
 ✅ **Einfache Installation** - Plug & Play für Cinnamon
 
 ## Installation
@@ -53,4 +55,4 @@ Falls Daten nicht laden:
 
 ## Version
 
-v1.7.0 - Cairo-Kartenhintergrund und stabiles Referenzlayout ohne Theme-CSS
+v1.8.0 - Cairo-Kartenhintergrund, Wetterzusatzdaten und erweiterte Ortssteuerung
