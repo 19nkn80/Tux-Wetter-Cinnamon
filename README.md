@@ -58,4 +58,4 @@ Falls Daten nicht laden:
 
 ## Version
 
-v1.12.0 - Initialer Datenabruf beim Start und kontrastreichere Verläufe
+v1.13.0 - Sichtbare Theme-Fallbackfarben, ausgeschriebene Wetterwerte und größere Bedienelemente

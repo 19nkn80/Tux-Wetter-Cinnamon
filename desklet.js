@@ -9,7 +9,7 @@ const Settings = imports.ui.settings;
 
 const REPOSITORY = '19nkn80/Tux-Wetter-Cinnamon';
 const RAW_BASE_URL = 'https://raw.githubusercontent.com/' + REPOSITORY + '/main/';
-const LOCAL_VERSION = '1.12.0';
+const LOCAL_VERSION = '1.13.0';
 
 class TuxWetterDesklet extends Desklet.Desklet {
     constructor(metadata, desklet_id) {
@@ -89,15 +89,15 @@ class TuxWetterDesklet extends Desklet.Desklet {
         const headerLeft = new St.BoxLayout({vertical: true});
         headerLeft.set_width(360);
         const locationBar = new St.BoxLayout({vertical: false, style: 'margin-bottom: 2px;'});
-        this.previousLocationButton = new St.Button({label: '‹', style: 'font-size: 22px; color: #d7b5ff; padding: 0 7px;'});
+        this.previousLocationButton = new St.Button({label: '‹', style: 'font-size: 34px; color: #ffffff; padding: 0 10px;'});
         this.previousLocationButton.connect('clicked', () => this._cycleLocation(-1));
         locationBar.add(this.previousLocationButton);
-        this.locationLabel = new St.Label({text: 'Lüchow', style: 'font-size: 28px; font-weight: 500; color: #fff;'});
+        this.locationLabel = new St.Label({text: 'Lüchow', style: 'font-size: 34px; font-weight: 600; color: #fff;'});
         locationBar.add(this.locationLabel);
-        this.nextLocationButton = new St.Button({label: '›', style: 'font-size: 22px; color: #d7b5ff; padding: 0 7px;'});
+        this.nextLocationButton = new St.Button({label: '›', style: 'font-size: 34px; color: #ffffff; padding: 0 10px;'});
         this.nextLocationButton.connect('clicked', () => this._cycleLocation(1));
         locationBar.add(this.nextLocationButton);
-        this.settingsButton = new St.Button({label: '⚙', style: 'font-size: 17px; color: #d7b5ff; padding: 0 7px;'});
+        this.settingsButton = new St.Button({label: '⚙', style: 'font-size: 28px; color: #ffffff; padding: 0 10px;'});
         this.settingsButton.connect('clicked', () => this.configureDesklet());
         locationBar.add(this.settingsButton);
         headerLeft.add(locationBar);
@@ -116,6 +116,11 @@ class TuxWetterDesklet extends Desklet.Desklet {
         
         this.descLabel = new St.Label({text: 'Laden...', style: 'font-size: 27px; color: #fff; margin-bottom: 15px;'});
         headerRight.add(this.descLabel);
+        this.providerLabel = new St.Label({
+            text: 'Wetterdienst: Open-Meteo',
+            style: 'font-size: 15px; color: rgba(255,255,255,0.8); margin-bottom: 8px;'
+        });
+        headerRight.add(this.providerLabel);
         
         const metricsBox = new St.BoxLayout({vertical: false});
         this.windLabel = new St.Label({text: '💨 -- km/h', style: 'font-size: 19px; color: #fff; margin-right: 28px;'});
@@ -154,11 +159,11 @@ class TuxWetterDesklet extends Desklet.Desklet {
         infoBox.add(this.sunriseLabel);
         this.sunsetLabel = new St.Label({text: '🌇 16:10', style: 'font-size: 19px; color: #fff; margin-right: 25px;'});
         infoBox.add(this.sunsetLabel);
-        this.uvLabel = new St.Label({text: '🌙 UV: 0', style: 'font-size: 19px; color: #fff; margin-right: 25px;'});
+        this.uvLabel = new St.Label({text: '☀ UV-Index: 0', style: 'font-size: 19px; color: #fff; margin-right: 25px;'});
         infoBox.add(this.uvLabel);
-        this.airLabel = new St.Label({text: 'Luft: gut', style: 'font-size: 19px; color: #fff; margin-right: 25px;'});
+        this.airLabel = new St.Label({text: 'Luftqualität: gut', style: 'font-size: 19px; color: #fff; margin-right: 25px;'});
         infoBox.add(this.airLabel);
-        this.pollenLabel = new St.Label({text: 'Pollen: --', style: 'font-size: 19px; color: #fff; margin-right: 25px;'});
+        this.pollenLabel = new St.Label({text: 'Pollenbelastung: --', style: 'font-size: 19px; color: #fff; margin-right: 25px;'});
         infoBox.add(this.pollenLabel);
         this.rainNowLabel = new St.Label({text: 'Regen: --', style: 'font-size: 19px; color: #fff;'});
         infoBox.add(this.rainNowLabel);
@@ -295,11 +300,11 @@ class TuxWetterDesklet extends Desklet.Desklet {
     _getTheme() {
         const themes = {
             nacht: ['#6b315f', '#263ec2'],
-            violett: ['#9b3d72', '#354bd4'],
-            ozean: ['#126b9b', '#1649c7'],
-            smaragd: ['#1e946f', '#214acb'],
-            sonnenuntergang: ['#c04d61', '#6c43c7'],
-            schiefer: ['#52658d', '#2d4dca']
+            violett: ['#b74682', '#354bd4'],
+            ozean: ['#168fc0', '#1649c7'],
+            smaragd: ['#27b77d', '#214acb'],
+            sonnenuntergang: ['#e05b68', '#6c43c7'],
+            schiefer: ['#718bc2', '#2d4dca']
         };
         return themes[this.colorTheme] || themes.nacht;
     }
@@ -384,8 +389,11 @@ class TuxWetterDesklet extends Desklet.Desklet {
     _applyAppearance() {
         this._backgroundAlpha = Math.max(0.85, Math.min(1, Number(this.opacity) / 100 || 0.92));
         const scale = Math.max(0.5, Math.min(1, Number(this.scalePercent) / 100 || 0.72));
+        const theme = this._getTheme();
         this.card.set_scale(scale, scale);
         this.card.opacity = 255;
+        this.card.set_style('background-color: transparent;');
+        this.background.set_style('background-color: ' + theme[0] + ';');
         this.background.queue_repaint();
     }
 
@@ -466,6 +474,14 @@ class TuxWetterDesklet extends Desklet.Desklet {
         const text = String(value || '');
         if (text.indexOf('T') >= 0) return text.split('T')[1].substring(0, 5);
         return text.substring(0, 5) || '--:--';
+    }
+
+    _providerName() {
+        return {
+            'open-meteo': 'Open-Meteo',
+            'wttr-in': 'wttr.in',
+            'met-no': 'MET Norway / yr.no'
+        }[this.weatherProvider] || this.weatherProvider;
     }
 
     _formatWind(value) {
@@ -736,6 +752,7 @@ class TuxWetterDesklet extends Desklet.Desklet {
             if (!j.current) return;
             
             let c = j.current;
+            this.providerLabel.set_text('Wetterdienst: ' + this._providerName());
             let air = null;
             try {
                 air = JSON.parse(this._fetchText(
@@ -756,9 +773,9 @@ class TuxWetterDesklet extends Desklet.Desklet {
             this.pressureLabel.set_text(Math.round(c.pressure_msl || 0) + ' hPa');
             this.feelsLabel.set_text('gefühlt ' + this._formatTemperature(c.apparent_temperature));
             this.currentIcon.set_text(this._getIcon(c.weather_code));
-            this.uvLabel.set_text('🌙 UV: ' + Math.round(c.uv_index));
+            this.uvLabel.set_text('☀ UV-Index: ' + Math.round(c.uv_index));
             if (air && air.current) {
-                this.airLabel.set_text('Luft: ' + Math.round(air.current.european_aqi));
+                this.airLabel.set_text('Luftqualität: ' + Math.round(air.current.european_aqi));
             }
             if (air && air.hourly) {
                 const pollenValues = [
@@ -769,7 +786,9 @@ class TuxWetterDesklet extends Desklet.Desklet {
                     air.hourly.olive_pollen,
                     air.hourly.ragweed_pollen
                 ].map((values) => Number(values && values[new Date().getHours()] || 0));
-                this.pollenLabel.set_text('Pollen: ' + this._pollenText(Math.max.apply(null, pollenValues)));
+                this.pollenLabel.set_text(
+                    'Pollenbelastung: ' + this._pollenText(Math.max.apply(null, pollenValues))
+                );
             }
             if (this.showMoon) {
                 try {
