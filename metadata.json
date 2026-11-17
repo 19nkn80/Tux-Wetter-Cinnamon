@@ -1,0 +1,10 @@
+{
+ "uuid": "tux-wetter@cinnamon-desklet",
+ "name": "TuX-Wetter",
+ "description": "Weather desklet with Open-Meteo API",
+ "version": "1.1.0",
+ "website": "https://github.com/19nkn80/Tux-Wetter-Cinnamon",
+ "icon": "weather-clear",
+ "prevent-decorations": true,
+ "max-instances": "100"
+}
