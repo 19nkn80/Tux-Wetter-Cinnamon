@@ -47,14 +47,14 @@
   },
   "color-theme": {
     "type": "combobox",
-    "default": "nacht",
+    "default": "Nachtblau",
     "options": {
-      "nacht": "Nachtblau",
-      "violett": "Violett",
-      "ozean": "Ozean",
-      "smaragd": "Smaragd",
-      "sonnenuntergang": "Sonnenuntergang",
-      "schiefer": "Schiefer"
+      "Nachtblau": "Nachtblau",
+      "Violett": "Violett",
+      "Ozean": "Ozean",
+      "Smaragd": "Smaragd",
+      "Sonnenuntergang": "Sonnenuntergang",
+      "Schiefer": "Schiefer"
     },
     "description": "Farbverlauf auswählen"
   },

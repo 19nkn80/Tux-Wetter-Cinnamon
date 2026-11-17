@@ -10,6 +10,8 @@ const REPOSITORY = '19nkn80/Tux-Wetter-Cinnamon';
 const RAW_BASE_URL = 'https://raw.githubusercontent.com/' + REPOSITORY + '/main/';
 const LOCAL_VERSION = '1.16.0';
 const GRADIENT_STRIP_COUNT = 100;
+const CARD_WIDTH = 760;
+const CARD_HEIGHT = 760;
 
 class TuxWetterDesklet extends Desklet.Desklet {
     constructor(metadata, desklet_id) {
@@ -72,21 +74,21 @@ class TuxWetterDesklet extends Desklet.Desklet {
             style: 'background-color: transparent;'
         });
         this.card.set_clip_to_allocation(true);
-        this.card.set_width(760);
-        this.card.set_height(700);
+        this.card.set_width(CARD_WIDTH);
+        this.card.set_height(CARD_HEIGHT);
         this.card.set_scale(0.72, 0.72);
         this.card.set_pivot_point(0, 0);
         this.background = new St.BoxLayout({vertical: true});
-        this.background.set_width(760);
-        this.background.set_height(700);
+        this.background.set_width(CARD_WIDTH);
+        this.background.set_height(CARD_HEIGHT);
         this.gradientStrips = [];
         for (let i = 0; i < GRADIENT_STRIP_COUNT; i++) {
             const strip = new Clutter.Actor();
             strip.set_background_color(new Clutter.Color({
                 red: 61, green: 85, blue: 201, alpha: 255
             }));
-            strip.set_height(7);
-            strip.set_width(760);
+            strip.set_height(CARD_HEIGHT / GRADIENT_STRIP_COUNT);
+            strip.set_width(CARD_WIDTH);
             strip.set_x_expand(true);
             this.background.add_child(strip);
             this.gradientStrips.push(strip);
@@ -352,14 +354,7 @@ class TuxWetterDesklet extends Desklet.Desklet {
         };
         const value = this.settings.getValue('color-theme') || this.colorTheme;
         const normalized = labels[value] || value;
-        const storedLabel = labels[normalized] ? {
-            nacht: 'Nachtblau',
-            violett: 'Violett',
-            ozean: 'Ozean',
-            smaragd: 'Smaragd',
-            sonnenuntergang: 'Sonnenuntergang',
-            schiefer: 'Schiefer'
-        }[normalized] : normalized;
+        const storedLabel = Object.keys(labels).find((label) => labels[label] === normalized) || normalized;
         if (storedLabel !== value) {
             this.settings.setValue('color-theme', storedLabel);
         }
@@ -440,14 +435,14 @@ class TuxWetterDesklet extends Desklet.Desklet {
                 blue: color[2],
                 alpha: 255
             }));
-            strip.set_height(7);
-            strip.set_width(760);
+            strip.set_height(CARD_HEIGHT / GRADIENT_STRIP_COUNT);
+            strip.set_width(CARD_WIDTH);
             strip.set_x_expand(true);
             this.background.add_child(strip);
             this.gradientStrips.push(strip);
         }
-        this.background.set_width(760);
-        this.background.set_height(700);
+        this.background.set_width(CARD_WIDTH);
+        this.background.set_height(CARD_HEIGHT);
         this.background.queue_redraw();
         this.card.queue_redraw();
     }
