@@ -9,6 +9,21 @@
     "default": "Lüchow",
     "description": "Anzeigename (z. B. Berlin)"
   },
+  "location-search": {
+    "type": "entry",
+    "default": "Lüchow",
+    "description": "Ort suchen"
+  },
+  "search-location": {
+    "type": "button",
+    "description": "Standort suchen und speichern",
+    "callback": "on_location_search_pressed"
+  },
+  "saved-locations": {
+    "type": "entry",
+    "default": "Lüchow|52.9667,11.15",
+    "description": "Gespeicherte Orte (mit Semikolon getrennt)"
+  },
   "weather-provider": {
     "type": "combobox",
     "default": "open-meteo",
@@ -16,7 +31,20 @@
       "open-meteo": "Open-Meteo (kostenlos)",
       "wttr-in": "wttr.in (kostenlos)"
     },
-    "description": "Wetterdienst"
+    "description": "Wetterdienst auswählen"
+  },
+  "color-theme": {
+    "type": "combobox",
+    "default": "nacht",
+    "options": {
+      "nacht": "Nachtblau",
+      "violett": "Violett",
+      "ozean": "Ozean",
+      "smaragd": "Smaragd",
+      "sonnenuntergang": "Sonnenuntergang",
+      "schiefer": "Schiefer"
+    },
+    "description": "Farbverlauf auswählen"
   },
   "temperature-unit": {
     "type": "combobox",

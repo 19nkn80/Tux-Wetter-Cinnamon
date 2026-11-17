@@ -7,7 +7,7 @@ const Settings = imports.ui.settings;
 
 const REPOSITORY = '19nkn80/Tux-Wetter-Cinnamon';
 const RAW_BASE_URL = 'https://raw.githubusercontent.com/' + REPOSITORY + '/main/';
-const LOCAL_VERSION = '1.2.0';
+const LOCAL_VERSION = '1.3.0';
 
 class TuxWetterDesklet extends Desklet.Desklet {
     constructor(metadata, desklet_id) {
@@ -19,6 +19,7 @@ class TuxWetterDesklet extends Desklet.Desklet {
         this.temperatureUnit = 'celsius';
         this.windUnit = 'kmh';
         this.weatherProvider = 'open-meteo';
+        this.colorTheme = 'nacht';
         this.showHumidity = true;
         this.showPressure = true;
         this.showUvIndex = true;
@@ -34,6 +35,7 @@ class TuxWetterDesklet extends Desklet.Desklet {
         this.settings.bind('temperature-unit', 'temperatureUnit', this._onSettingsChanged.bind(this));
         this.settings.bind('wind-unit', 'windUnit', this._onSettingsChanged.bind(this));
         this.settings.bind('weather-provider', 'weatherProvider', this._onSettingsChanged.bind(this));
+        this.settings.bind('color-theme', 'colorTheme', this._onSettingsChanged.bind(this));
         this.settings.bind('update-interval', 'updateInterval', this._onSettingsChanged.bind(this));
         this.settings.bind('show-humidity', 'showHumidity', this._onSettingsChanged.bind(this));
         this.settings.bind('show-pressure', 'showPressure', this._onSettingsChanged.bind(this));
@@ -170,17 +172,61 @@ class TuxWetterDesklet extends Desklet.Desklet {
         this._fetchData();
     }
 
+    _getTheme() {
+        const themes = {
+            nacht: ['#16161d', '#29263d'],
+            violett: ['#4c1d95', '#7e22ce'],
+            ozean: ['#075985', '#0e7490'],
+            smaragd: ['#064e3b', '#047857'],
+            sonnenuntergang: ['#7c2d12', '#be185d'],
+            schiefer: ['#1e293b', '#475569']
+        };
+        return themes[this.colorTheme] || themes.nacht;
+    }
+
     _applyAppearance() {
-        const color = String(this.bgColor || '#16161d');
         const opacity = Math.max(0, Math.min(100, Number(this.opacity) || 92)) / 100;
-        if (/^#[0-9a-fA-F]{6}$/.test(color)) {
-            const red = parseInt(color.substring(1, 3), 16);
-            const green = parseInt(color.substring(3, 5), 16);
-            const blue = parseInt(color.substring(5, 7), 16);
-            this.mainBox.style = 'background-color: rgba(' + red + ', ' + green + ', ' + blue + ', ' +
-                opacity + '); padding: 20px; border-radius: 12px; width: 390px; border: 1px solid rgba(150, 70, 180, 0.9);';
-        }
+        const theme = this._getTheme();
+        this.mainBox.style = 'background-gradient-direction: vertical; background-gradient-start: ' +
+            theme[0] + '; background-gradient-end: ' + theme[1] + '; background-color: ' +
+            String(this.bgColor || theme[0]) + '; opacity: ' + opacity +
+            '; padding: 20px; border-radius: 12px; width: 390px; border: 1px solid rgba(210, 70, 220, 0.9);';
         this.mainBox.style = this.mainBox.style + 'color: ' + String(this.textColor || '#ffffff') + ';';
+    }
+
+    on_location_search_pressed() {
+        try {
+            const query = String(this.settings.getValue('location-search') || '').trim();
+            if (!query) throw new Error('Kein Suchbegriff');
+            const encoded = encodeURIComponent(query);
+            const result = JSON.parse(this._fetchText(
+                'https://geocoding-api.open-meteo.com/v1/search?name=' + encoded +
+                '&count=10&language=de&format=json'
+            ));
+            if (!result.results || result.results.length === 0) {
+                this._notify(_('Ort nicht gefunden.'));
+                return;
+            }
+            const wanted = query.toLowerCase();
+            const place = result.results.find((candidate) =>
+                String(candidate.name).toLowerCase() === wanted
+            ) || result.results.find((candidate) =>
+                String(candidate.country || '').toLowerCase() === 'deutschland'
+            ) || result.results[0];
+            const name = place.name + (place.country ? ', ' + place.country : '');
+            const coordinates = place.latitude + ',' + place.longitude;
+            this.settings.setValue('location-name', name);
+            this.settings.setValue('location', coordinates);
+            const saved = String(this.settings.getValue('saved-locations') || '');
+            const entries = saved ? saved.split(';') : [];
+            const entry = name + '|' + coordinates;
+            if (entries.indexOf(entry) < 0) entries.push(entry);
+            this.settings.setValue('saved-locations', entries.join(';'));
+            this._notify(_('Standort gespeichert: ') + name);
+        } catch (e) {
+            global.logError('TuX-Wetter Ortssuche: ' + e);
+            this._notify(_('Ortssuche fehlgeschlagen.'));
+        }
     }
 
     _restartUpdateTimer() {

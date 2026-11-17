@@ -51,4 +51,4 @@ Falls Daten nicht laden:
 
 ## Version
 
-v1.2.0 - Wetterdienst-Auswahl, deutsche Einstellungen und Anzeigeoptionen
+v1.3.0 - Farbverläufe, Ortssuche und gespeicherte Standorte
