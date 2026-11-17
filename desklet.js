@@ -107,7 +107,7 @@ class TuxWetterDesklet extends Desklet.Desklet {
         this.previousLocationButton = new St.Button({label: '‹', style: 'font-size: 48px; color: #ffffff; padding: 0 12px;'});
         this.previousLocationButton.connect('clicked', () => this._cycleLocation(-1));
         locationBar.add(this.previousLocationButton);
-        this.locationLabel = new St.Label({text: 'Lüchow', style: 'font-size: 42px; font-weight: 600; color: #fff;'});
+        this.locationLabel = new St.Label({text: 'Lüchow', style: 'font-size: 38px; font-weight: 600; color: #fff;'});
         locationBar.add(this.locationLabel);
         this.nextLocationButton = new St.Button({label: '›', style: 'font-size: 48px; color: #ffffff; padding: 0 12px;'});
         this.nextLocationButton.connect('clicked', () => this._cycleLocation(1));
@@ -120,7 +120,7 @@ class TuxWetterDesklet extends Desklet.Desklet {
         const temperatureBox = new St.BoxLayout({vertical: false});
         this.currentIcon = new St.Label({text: '☀️', style: 'font-size: 64px; margin: 4px 18px 0 0;'});
         temperatureBox.add(this.currentIcon);
-        this.tempLabel = new St.Label({text: '--°', style: 'font-size: 86px; font-weight: 500; color: #fff;'});
+        this.tempLabel = new St.Label({text: '--°', style: 'font-size: 82px; font-weight: 500; color: #fff;'});
         temperatureBox.add(this.tempLabel);
         headerLeft.add(temperatureBox);
         
@@ -352,8 +352,16 @@ class TuxWetterDesklet extends Desklet.Desklet {
         };
         const value = this.settings.getValue('color-theme') || this.colorTheme;
         const normalized = labels[value] || value;
-        if (normalized !== value) {
-            this.settings.setValue('color-theme', normalized);
+        const storedLabel = labels[normalized] ? {
+            nacht: 'Nachtblau',
+            violett: 'Violett',
+            ozean: 'Ozean',
+            smaragd: 'Smaragd',
+            sonnenuntergang: 'Sonnenuntergang',
+            schiefer: 'Schiefer'
+        }[normalized] : normalized;
+        if (storedLabel !== value) {
+            this.settings.setValue('color-theme', storedLabel);
         }
         return normalized;
     }
