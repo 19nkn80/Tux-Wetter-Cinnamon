@@ -258,6 +258,7 @@ class TuxWetterDesklet extends Desklet.Desklet {
         });
         this._timeout = 0;
         this._settingsTimeout = 0;
+        this._settingsProcess = 0;
     }
 
     _onSettingsChanged() {
@@ -319,7 +320,9 @@ class TuxWetterDesklet extends Desklet.Desklet {
             sonnenuntergang: ['#e05b68', '#6c43c7'],
             schiefer: ['#718bc2', '#2d4dca']
         };
-        return themes[this.colorTheme] || themes.nacht;
+        const selectedTheme = this.settings.getValue('color-theme') || this.colorTheme;
+        this.colorTheme = selectedTheme;
+        return themes[selectedTheme] || themes.nacht;
     }
 
     _hexToRgb(value) {
@@ -408,7 +411,33 @@ class TuxWetterDesklet extends Desklet.Desklet {
     }
 
     on_apply_settings_pressed() {
+        this.colorTheme = this.settings.getValue('color-theme') || this.colorTheme;
         this._applyAppearance();
+    }
+
+    configureDesklet(tab = 0) {
+        if (this._settingsProcess) {
+            global.log('TuX-Wetter: Einstellungsfenster ist bereits geöffnet.');
+            return;
+        }
+        try {
+            const [ok, pid] = GLib.spawn_async(
+                null,
+                ['xlet-settings', 'desklet', this._uuid, '-i', String(this.instance_id), '-t', String(tab)],
+                null,
+                GLib.SpawnFlags.SEARCH_PATH | GLib.SpawnFlags.DO_NOT_REAP_CHILD,
+                null
+            );
+            if (!ok) throw new Error('xlet-settings konnte nicht gestartet werden');
+            this._settingsProcess = pid;
+            GLib.child_watch_add(GLib.PRIORITY_DEFAULT, pid, (childPid) => {
+                GLib.spawn_close_pid(childPid);
+                this._settingsProcess = 0;
+            });
+        } catch (e) {
+            global.logError('TuX-Wetter Einstellungen: ' + e);
+            this._settingsProcess = 0;
+        }
     }
 
     on_location_search_pressed() {
