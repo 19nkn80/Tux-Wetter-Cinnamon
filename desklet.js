@@ -1,4 +1,6 @@
 const St = imports.gi.St;
+const Clutter = imports.gi.Clutter;
+const Cairo = imports.cairo;
 const Desklet = imports.ui.desklet;
 const GLib = imports.gi.GLib;
 const Main = imports.ui.main;
@@ -7,7 +9,7 @@ const Settings = imports.ui.settings;
 
 const REPOSITORY = '19nkn80/Tux-Wetter-Cinnamon';
 const RAW_BASE_URL = 'https://raw.githubusercontent.com/' + REPOSITORY + '/main/';
-const LOCAL_VERSION = '1.6.0';
+const LOCAL_VERSION = '1.7.0';
 
 class TuxWetterDesklet extends Desklet.Desklet {
     constructor(metadata, desklet_id) {
@@ -30,9 +32,6 @@ class TuxWetterDesklet extends Desklet.Desklet {
         this.textColor = '#ffffff';
         this.bgColor = '#16161d';
         this.opacity = 92;
-        this._theme = St.ThemeContext.get_for_stage(global.stage).get_theme();
-        this._stylesheetPath = this.metadata.path + '/stylesheet.css';
-        this._theme.load_stylesheet(this._stylesheetPath);
         this.settings = new Settings.DeskletSettings(this, this.metadata.uuid, desklet_id);
         this.settings.bind('location', 'location', this._onSettingsChanged.bind(this));
         this.settings.bind('location-name', 'locationName', this._onSettingsChanged.bind(this));
@@ -52,11 +51,23 @@ class TuxWetterDesklet extends Desklet.Desklet {
         this.settings.bind('bg-color', 'bgColor', this._onSettingsChanged.bind(this));
         this.settings.bind('opacity', 'opacity', this._onSettingsChanged.bind(this));
         
-        this.mainBox = new St.BoxLayout({
-            vertical: true, 
-            style_class: 'tux-wetter-card tux-wetter-theme-nacht',
-            style: 'width: 760px;'
+        this.card = new St.Widget({
+            layout_manager: new Clutter.BinLayout()
         });
+        this.card.set_width(760);
+        this.card.set_height(600);
+        this.background = new St.DrawingArea();
+        this.background.set_x_expand(true);
+        this.background.set_y_expand(true);
+        this.background.connect('repaint', () => this._paintBackground());
+        this.card.add_child(this.background);
+        this.mainBox = new St.BoxLayout({
+            vertical: true,
+            style: 'padding: 28px 34px;'
+        });
+        this.mainBox.set_x_expand(true);
+        this.mainBox.set_y_expand(true);
+        this.card.add_child(this.mainBox);
         
         const headerBox = new St.BoxLayout({vertical: false, style: 'margin-bottom: 18px;'});
         const headerLeft = new St.BoxLayout({vertical: true});
@@ -160,7 +171,7 @@ class TuxWetterDesklet extends Desklet.Desklet {
         }
         this.mainBox.add(dailyBox);
         
-        this.setContent(this.mainBox);
+        this.setContent(this.card);
         this.setHeader(_('TuX-Wetter'));
         this._menu.addAction(_('Nach GitHub-Updates suchen'), () => this._checkForUpdate());
         this._menu.addAction(_('GitHub-Projekt öffnen'), () => {
@@ -215,10 +226,45 @@ class TuxWetterDesklet extends Desklet.Desklet {
         return themes[this.colorTheme] || themes.nacht;
     }
 
+    _hexToRgb(value) {
+        const hex = String(value).replace('#', '');
+        return [
+            parseInt(hex.substring(0, 2), 16) / 255,
+            parseInt(hex.substring(2, 4), 16) / 255,
+            parseInt(hex.substring(4, 6), 16) / 255
+        ];
+    }
+
+    _paintBackground() {
+        const area = this.background;
+        const [width, height] = area.get_surface_size();
+        if (width <= 0 || height <= 0) return;
+        const cr = area.get_context();
+        const theme = this._getTheme();
+        const start = this._hexToRgb(theme[0]);
+        const end = this._hexToRgb(theme[1]);
+        const gradient = new Cairo.LinearGradient(0, 0, width, height);
+        gradient.addColorStopRGBA(0, start[0], start[1], start[2], 0.96);
+        gradient.addColorStopRGBA(1, end[0], end[1], end[2], 0.96);
+        const radius = 20;
+        cr.newSubPath();
+        cr.arc(width - radius, radius, radius, -Math.PI / 2, 0);
+        cr.arc(width - radius, height - radius, radius, 0, Math.PI / 2);
+        cr.arc(radius, height - radius, radius, Math.PI / 2, Math.PI);
+        cr.arc(radius, radius, radius, Math.PI, Math.PI * 1.5);
+        cr.closePath();
+        cr.setSource(gradient);
+        cr.fillPreserve();
+        cr.setSourceRGBA(0.82, 0.82, 1, 0.85);
+        cr.setLineWidth(1);
+        cr.stroke();
+        cr.$dispose();
+    }
+
     _applyAppearance() {
         const opacity = Math.max(0, Math.min(100, Number(this.opacity) || 92)) / 100;
-        this.mainBox.style_class = 'tux-wetter-card tux-wetter-theme-' + this.colorTheme;
-        this.mainBox.opacity = Math.round(opacity * 255);
+        this.card.opacity = Math.round(opacity * 255);
+        this.background.queue_repaint();
     }
 
     on_location_search_pressed() {
@@ -317,7 +363,7 @@ class TuxWetterDesklet extends Desklet.Desklet {
 
     _installUpdate() {
         try {
-            const files = ['desklet.js', 'metadata.json', 'settings-schema.json', 'stylesheet.css'];
+            const files = ['desklet.js', 'metadata.json', 'settings-schema.json'];
             for (let i = 0; i < files.length; i++) {
                 const content = this._fetchText(RAW_BASE_URL + files[i]);
                 const path = GLib.build_filenamev([
@@ -537,9 +583,6 @@ class TuxWetterDesklet extends Desklet.Desklet {
         if (this._timeout) {
             GLib.source_remove(this._timeout);
             this._timeout = 0;
-        }
-        if (this._theme && this._stylesheetPath) {
-            this._theme.unload_stylesheet(this._stylesheetPath);
         }
     }
 
