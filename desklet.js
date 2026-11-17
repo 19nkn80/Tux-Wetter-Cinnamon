@@ -9,7 +9,7 @@ const Settings = imports.ui.settings;
 
 const REPOSITORY = '19nkn80/Tux-Wetter-Cinnamon';
 const RAW_BASE_URL = 'https://raw.githubusercontent.com/' + REPOSITORY + '/main/';
-const LOCAL_VERSION = '1.13.0';
+const LOCAL_VERSION = '1.14.0';
 
 class TuxWetterDesklet extends Desklet.Desklet {
     constructor(metadata, desklet_id) {
@@ -89,15 +89,15 @@ class TuxWetterDesklet extends Desklet.Desklet {
         const headerLeft = new St.BoxLayout({vertical: true});
         headerLeft.set_width(360);
         const locationBar = new St.BoxLayout({vertical: false, style: 'margin-bottom: 2px;'});
-        this.previousLocationButton = new St.Button({label: '‹', style: 'font-size: 34px; color: #ffffff; padding: 0 10px;'});
+        this.previousLocationButton = new St.Button({label: '‹', style: 'font-size: 48px; color: #ffffff; padding: 0 12px;'});
         this.previousLocationButton.connect('clicked', () => this._cycleLocation(-1));
         locationBar.add(this.previousLocationButton);
-        this.locationLabel = new St.Label({text: 'Lüchow', style: 'font-size: 34px; font-weight: 600; color: #fff;'});
+        this.locationLabel = new St.Label({text: 'Lüchow', style: 'font-size: 42px; font-weight: 600; color: #fff;'});
         locationBar.add(this.locationLabel);
-        this.nextLocationButton = new St.Button({label: '›', style: 'font-size: 34px; color: #ffffff; padding: 0 10px;'});
+        this.nextLocationButton = new St.Button({label: '›', style: 'font-size: 48px; color: #ffffff; padding: 0 12px;'});
         this.nextLocationButton.connect('clicked', () => this._cycleLocation(1));
         locationBar.add(this.nextLocationButton);
-        this.settingsButton = new St.Button({label: '⚙', style: 'font-size: 28px; color: #ffffff; padding: 0 10px;'});
+        this.settingsButton = new St.Button({label: '⚙', style: 'font-size: 38px; color: #ffffff; padding: 0 12px;'});
         this.settingsButton.connect('clicked', () => this.configureDesklet());
         locationBar.add(this.settingsButton);
         headerLeft.add(locationBar);
@@ -118,7 +118,7 @@ class TuxWetterDesklet extends Desklet.Desklet {
         headerRight.add(this.descLabel);
         this.providerLabel = new St.Label({
             text: 'Wetterdienst: Open-Meteo',
-            style: 'font-size: 15px; color: rgba(255,255,255,0.8); margin-bottom: 8px;'
+            style: 'font-size: 19px; color: rgba(255,255,255,0.85); margin-bottom: 8px;'
         });
         headerRight.add(this.providerLabel);
         
@@ -154,19 +154,23 @@ class TuxWetterDesklet extends Desklet.Desklet {
         }
         this.mainBox.add(hourlyBox);
         
-        const infoBox = new St.BoxLayout({vertical: false, style: 'margin-bottom: 18px;'});
-        this.sunriseLabel = new St.Label({text: '🌅 07:31', style: 'font-size: 19px; color: #fff; margin-right: 25px;'});
-        infoBox.add(this.sunriseLabel);
-        this.sunsetLabel = new St.Label({text: '🌇 16:10', style: 'font-size: 19px; color: #fff; margin-right: 25px;'});
-        infoBox.add(this.sunsetLabel);
-        this.uvLabel = new St.Label({text: '☀ UV-Index: 0', style: 'font-size: 19px; color: #fff; margin-right: 25px;'});
-        infoBox.add(this.uvLabel);
-        this.airLabel = new St.Label({text: 'Luftqualität: gut', style: 'font-size: 19px; color: #fff; margin-right: 25px;'});
-        infoBox.add(this.airLabel);
-        this.pollenLabel = new St.Label({text: 'Pollenbelastung: --', style: 'font-size: 19px; color: #fff; margin-right: 25px;'});
-        infoBox.add(this.pollenLabel);
-        this.rainNowLabel = new St.Label({text: 'Regen: --', style: 'font-size: 19px; color: #fff;'});
-        infoBox.add(this.rainNowLabel);
+        const infoBox = new St.BoxLayout({vertical: true, style: 'margin-bottom: 18px;'});
+        const infoRowOne = new St.BoxLayout({vertical: false, style: 'margin-bottom: 6px;'});
+        this.sunriseLabel = new St.Label({text: 'Sonnenaufgang: 07:31', style: 'font-size: 18px; color: #fff; margin-right: 25px;'});
+        infoRowOne.add(this.sunriseLabel);
+        this.sunsetLabel = new St.Label({text: 'Sonnenuntergang: 16:10', style: 'font-size: 18px; color: #fff; margin-right: 25px;'});
+        infoRowOne.add(this.sunsetLabel);
+        this.uvLabel = new St.Label({text: '☀ UV-Index: 0', style: 'font-size: 18px; color: #fff;'});
+        infoRowOne.add(this.uvLabel);
+        infoBox.add(infoRowOne);
+        const infoRowTwo = new St.BoxLayout({vertical: false});
+        this.airLabel = new St.Label({text: 'Luftqualität: gut', style: 'font-size: 18px; color: #fff; margin-right: 25px;'});
+        infoRowTwo.add(this.airLabel);
+        this.pollenLabel = new St.Label({text: 'Pollenbelastung: --', style: 'font-size: 18px; color: #fff; margin-right: 25px;'});
+        infoRowTwo.add(this.pollenLabel);
+        this.rainNowLabel = new St.Label({text: 'Regenwahrscheinlichkeit: --', style: 'font-size: 18px; color: #fff;'});
+        infoRowTwo.add(this.rainNowLabel);
+        infoBox.add(infoRowTwo);
         this.mainBox.add(infoBox);
 
         this.moonLabel = new St.Label({
@@ -837,8 +841,8 @@ class TuxWetterDesklet extends Desklet.Desklet {
             if (j.daily) {
                 const sr = this._formatTime(j.daily.sunrise[0]);
                 const ss = this._formatTime(j.daily.sunset[0]);
-                this.sunriseLabel.set_text('🌅 Aufgang ' + sr);
-                this.sunsetLabel.set_text('🌇 Untergang ' + ss);
+                this.sunriseLabel.set_text('Sonnenaufgang: ' + sr);
+                this.sunsetLabel.set_text('Sonnenuntergang: ' + ss);
             }
             
             if (j.hourly && j.hourly.temperature_2m && j.hourly.weather_code) {
@@ -853,7 +857,8 @@ class TuxWetterDesklet extends Desklet.Desklet {
                         this.hourlyLabels[i].te.set_text(this._formatTemperature(j.hourly.temperature_2m[h]));
                         if (i === 0 && j.hourly.precipitation_probability) {
                             this.rainNowLabel.set_text(
-                                'Regen: ' + Math.round(j.hourly.precipitation_probability[h]) + '%'
+                                'Regenwahrscheinlichkeit: ' +
+                                Math.round(j.hourly.precipitation_probability[h]) + '%'
                             );
                         }
                     }

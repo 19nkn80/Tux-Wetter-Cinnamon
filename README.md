@@ -58,4 +58,4 @@ Falls Daten nicht laden:
 
 ## Version
 
-v1.13.0 - Sichtbare Theme-Fallbackfarben, ausgeschriebene Wetterwerte und größere Bedienelemente
+v1.14.0 - Lesbare zweizeilige Wetterinformationen und vergrößerte Bedienflächen
