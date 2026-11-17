@@ -156,20 +156,20 @@ class TuxWetterDesklet extends Desklet.Desklet {
                 this._fetchData();
                 return true;
             }
-
-            _formatTemperature(value) {
-                if (this.temperatureUnit === 'fahrenheit') {
-                    return Math.round((value * 9 / 5) + 32) + '°F';
-                }
-                return Math.round(value) + '°C';
-            }
-
-            _formatWind(value) {
-                if (this.windUnit === 'ms') return (value / 3.6).toFixed(1) + ' m/s';
-                if (this.windUnit === 'mph') return (value / 1.60934).toFixed(1) + ' mph';
-                return Math.round(value) + ' km/h';
-            }
         );
+    }
+
+    _formatTemperature(value) {
+        if (this.temperatureUnit === 'fahrenheit') {
+            return Math.round((value * 9 / 5) + 32) + '°F';
+        }
+        return Math.round(value) + '°C';
+    }
+
+    _formatWind(value) {
+        if (this.windUnit === 'ms') return (value / 3.6).toFixed(1) + ' m/s';
+        if (this.windUnit === 'mph') return (value / 1.60934).toFixed(1) + ' mph';
+        return Math.round(value) + ' km/h';
     }
 
     _notify(message) {
