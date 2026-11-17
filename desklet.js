@@ -8,11 +8,14 @@ const Settings = imports.ui.settings;
 
 const REPOSITORY = '19nkn80/Tux-Wetter-Cinnamon';
 const RAW_BASE_URL = 'https://raw.githubusercontent.com/' + REPOSITORY + '/main/';
-const LOCAL_VERSION = '1.15.0';
+const LOCAL_VERSION = '1.16.0';
 
 class TuxWetterDesklet extends Desklet.Desklet {
     constructor(metadata, desklet_id) {
         super(metadata, desklet_id);
+        this.actor.set_style('background-color: transparent;');
+        this.content.set_style('background-color: transparent;');
+        this.actor.set_clip_to_allocation(true);
         this.desklet_id = desklet_id;
         this.location = '52.52,13.405';
         this.locationName = 'Lüchow';
@@ -63,8 +66,10 @@ class TuxWetterDesklet extends Desklet.Desklet {
         this.settings.bind('desklet-scale', 'scalePercent', this._onSettingsChanged.bind(this));
         
         this.card = new St.Widget({
-            layout_manager: new Clutter.BinLayout()
+            layout_manager: new Clutter.BinLayout(),
+            style: 'background-color: transparent;'
         });
+        this.card.set_clip_to_allocation(true);
         this.card.set_width(760);
         this.card.set_height(700);
         this.card.set_scale(0.72, 0.72);

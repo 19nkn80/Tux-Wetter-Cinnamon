@@ -58,4 +58,4 @@ Falls Daten nicht laden:
 
 ## Version
 
-v1.15.0 - Native St-Farbstreifen statt Cairo-Zeichenfläche für zuverlässige Verläufe
+v1.16.0 - Transparenter Desklet-Container ohne fremden Hintergrundbereich
