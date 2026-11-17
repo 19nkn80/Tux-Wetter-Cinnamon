@@ -7,7 +7,7 @@ const Settings = imports.ui.settings;
 
 const REPOSITORY = '19nkn80/Tux-Wetter-Cinnamon';
 const RAW_BASE_URL = 'https://raw.githubusercontent.com/' + REPOSITORY + '/main/';
-const LOCAL_VERSION = '1.3.0';
+const LOCAL_VERSION = '1.5.0';
 
 class TuxWetterDesklet extends Desklet.Desklet {
     constructor(metadata, desklet_id) {
@@ -20,6 +20,7 @@ class TuxWetterDesklet extends Desklet.Desklet {
         this.windUnit = 'kmh';
         this.weatherProvider = 'open-meteo';
         this.colorTheme = 'nacht';
+        this.savedLocations = 'Lüchow|52.9667,11.15';
         this.showHumidity = true;
         this.showPressure = true;
         this.showUvIndex = true;
@@ -36,6 +37,7 @@ class TuxWetterDesklet extends Desklet.Desklet {
         this.settings.bind('wind-unit', 'windUnit', this._onSettingsChanged.bind(this));
         this.settings.bind('weather-provider', 'weatherProvider', this._onSettingsChanged.bind(this));
         this.settings.bind('color-theme', 'colorTheme', this._onSettingsChanged.bind(this));
+        this.settings.bind('saved-locations', 'savedLocations', this._onSettingsChanged.bind(this));
         this.settings.bind('update-interval', 'updateInterval', this._onSettingsChanged.bind(this));
         this.settings.bind('show-humidity', 'showHumidity', this._onSettingsChanged.bind(this));
         this.settings.bind('show-pressure', 'showPressure', this._onSettingsChanged.bind(this));
@@ -54,9 +56,19 @@ class TuxWetterDesklet extends Desklet.Desklet {
         
         const headerBox = new St.BoxLayout({vertical: false, style: 'margin-bottom: 16px;'});
         const headerLeft = new St.BoxLayout({vertical: true});
-        
+        const locationBar = new St.BoxLayout({vertical: false, style: 'margin-bottom: 4px;'});
+        this.previousLocationButton = new St.Button({label: '‹', style: 'font-size: 22px; color: #d7b5ff; padding: 0 7px;'});
+        this.previousLocationButton.connect('clicked', () => this._cycleLocation(-1));
+        locationBar.add(this.previousLocationButton);
         this.locationLabel = new St.Label({text: 'Lüchow', style: 'font-size: 18px; font-weight: bold; color: #fff;'});
-        headerLeft.add(this.locationLabel);
+        locationBar.add(this.locationLabel);
+        this.nextLocationButton = new St.Button({label: '›', style: 'font-size: 22px; color: #d7b5ff; padding: 0 7px;'});
+        this.nextLocationButton.connect('clicked', () => this._cycleLocation(1));
+        locationBar.add(this.nextLocationButton);
+        this.settingsButton = new St.Button({label: '⚙', style: 'font-size: 17px; color: #d7b5ff; padding: 0 7px;'});
+        this.settingsButton.connect('clicked', () => this.configureDesklet());
+        locationBar.add(this.settingsButton);
+        headerLeft.add(locationBar);
         
         this.tempLabel = new St.Label({text: '--°', style: 'font-size: 58px; font-weight: 900; color: #fff;'});
         headerLeft.add(this.tempLabel);
@@ -172,6 +184,24 @@ class TuxWetterDesklet extends Desklet.Desklet {
         this._fetchData();
     }
 
+    _getSavedLocationEntries() {
+        if (Array.isArray(this.savedLocations)) {
+            return this.savedLocations.map((entry) => entry.name + '|' + entry.coordinates);
+        }
+        return String(this.savedLocations || '').split(';').filter((entry) => entry.indexOf('|') > 0);
+    }
+
+    _cycleLocation(step) {
+        const entries = this._getSavedLocationEntries();
+        if (entries.length < 2) return;
+        let current = entries.findIndex((entry) => entry.split('|')[1] === this.location);
+        if (current < 0) current = 0;
+        const next = (current + step + entries.length) % entries.length;
+        const parts = entries[next].split('|');
+        this.settings.setValue('location-name', parts[0]);
+        this.settings.setValue('location', parts.slice(1).join('|'));
+    }
+
     _getTheme() {
         const themes = {
             nacht: ['#16161d', '#29263d'],
@@ -217,11 +247,13 @@ class TuxWetterDesklet extends Desklet.Desklet {
             const coordinates = place.latitude + ',' + place.longitude;
             this.settings.setValue('location-name', name);
             this.settings.setValue('location', coordinates);
-            const saved = String(this.settings.getValue('saved-locations') || '');
-            const entries = saved ? saved.split(';') : [];
-            const entry = name + '|' + coordinates;
-            if (entries.indexOf(entry) < 0) entries.push(entry);
-            this.settings.setValue('saved-locations', entries.join(';'));
+            const saved = this.settings.getValue('saved-locations');
+            const entries = Array.isArray(saved) ? saved.slice() : [];
+            const exists = entries.some((entry) =>
+                entry.name === name && entry.coordinates === coordinates
+            );
+            if (!exists) entries.push({name: name, coordinates: coordinates});
+            this.settings.setValue('saved-locations', entries);
             this._notify(_('Standort gespeichert: ') + name);
         } catch (e) {
             global.logError('TuX-Wetter Ortssuche: ' + e);
@@ -337,6 +369,60 @@ class TuxWetterDesklet extends Desklet.Desklet {
         return 0;
     }
 
+    _codeFromSymbol(symbol) {
+        const text = String(symbol || '').replace(/_/g, ' ');
+        return this._codeFromText(text);
+    }
+
+    _normalizeMetNorway(data) {
+        const series = data.properties.timeseries;
+        if (!series || series.length === 0) throw new Error('MET Norway lieferte keine Daten');
+        const values = series.slice(0, 168);
+        const first = values[0].data.instant.details;
+        const currentSymbol = values[0].data.next_1_hours ?
+            values[0].data.next_1_hours.summary.symbol_code : '';
+        const daily = [];
+        for (let day = 0; day < 7; day++) {
+            const item = values[Math.min(day * 24, values.length - 1)];
+            const details = item.data.instant.details;
+            daily.push({
+                temperature_2m_max: Number(details.air_temperature),
+                temperature_2m_min: Number(details.air_temperature),
+                weather_code: this._codeFromSymbol(item.data.next_1_hours ?
+                    item.data.next_1_hours.summary.symbol_code : ''),
+                precipitation_probability_max: 0
+            });
+        }
+        return {
+            current: {
+                temperature_2m: Number(first.air_temperature),
+                relative_humidity_2m: Number(first.relative_humidity),
+                apparent_temperature: Number(first.air_temperature),
+                weather_code: this._codeFromSymbol(currentSymbol),
+                wind_speed_10m: Number(first.wind_speed),
+                precipitation_probability: 0,
+                uv_index: 0,
+                pressure_msl: Number(first.air_pressure_at_sea_level)
+            },
+            hourly: {
+                temperature_2m: values.slice(0, 6).map((item) =>
+                    Number(item.data.instant.details.air_temperature)
+                ),
+                weather_code: values.slice(0, 6).map((item) => this._codeFromSymbol(
+                    item.data.next_1_hours ? item.data.next_1_hours.summary.symbol_code : ''
+                ))
+            },
+            daily: {
+                weather_code: daily.map((item) => item.weather_code),
+                temperature_2m_max: daily.map((item) => item.temperature_2m_max),
+                temperature_2m_min: daily.map((item) => item.temperature_2m_min),
+                precipitation_probability_max: daily.map((item) => item.precipitation_probability_max),
+                sunrise: ['--:--'],
+                sunset: ['--:--']
+            }
+        };
+    }
+
     _normalizeWttr(data) {
         const current = data.current_condition[0];
         const today = data.weather[0];
@@ -377,6 +463,8 @@ class TuxWetterDesklet extends Desklet.Desklet {
             let cmd;
             if (this.weatherProvider === 'wttr-in') {
                 cmd = `curl -s "https://wttr.in/${latitude},${longitude}?format=j1"`;
+            } else if (this.weatherProvider === 'met-no') {
+                cmd = `curl -s -A "TuX-Wetter/1.3" "https://api.met.no/weatherapi/locationforecast/2.0/compact?lat=${latitude}&lon=${longitude}"`;
             } else {
                 cmd = `curl -s "https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m,precipitation_probability,uv_index,pressure_msl&hourly=temperature_2m,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,sunrise,sunset&timezone=auto&forecast_days=7"`;
             }
@@ -386,6 +474,7 @@ class TuxWetterDesklet extends Desklet.Desklet {
             
             let j = JSON.parse(out.toString());
             if (this.weatherProvider === 'wttr-in') j = this._normalizeWttr(j);
+            if (this.weatherProvider === 'met-no') j = this._normalizeMetNorway(j);
             if (!j.current) return;
             
             let c = j.current;

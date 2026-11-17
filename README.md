@@ -51,4 +51,4 @@ Falls Daten nicht laden:
 
 ## Version
 
-v1.3.0 - Farbverläufe, Ortssuche und gespeicherte Standorte
+v1.5.0 - Ortsliste, Pfeilnavigation, Zahnrad und drei Wetterdienste

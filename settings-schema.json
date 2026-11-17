@@ -20,16 +20,23 @@
     "callback": "on_location_search_pressed"
   },
   "saved-locations": {
-    "type": "entry",
-    "default": "Lüchow|52.9667,11.15",
-    "description": "Gespeicherte Orte (mit Semikolon getrennt)"
+    "type": "list",
+    "description": "Gespeicherte Orte",
+    "columns": [
+      {"id": "name", "title": "Ort", "type": "string"},
+      {"id": "coordinates", "title": "Koordinaten", "type": "string"}
+    ],
+    "default": [
+      {"name": "Lüchow", "coordinates": "52.9667,11.15"}
+    ]
   },
   "weather-provider": {
     "type": "combobox",
     "default": "open-meteo",
     "options": {
       "open-meteo": "Open-Meteo (kostenlos)",
-      "wttr-in": "wttr.in (kostenlos)"
+      "wttr-in": "wttr.in (kostenlos)",
+      "met-no": "MET Norway / yr.no (kostenlos)"
     },
     "description": "Wetterdienst auswählen"
   },
