@@ -354,9 +354,8 @@ class TuxWetterDesklet extends Desklet.Desklet {
         };
         const value = this.settings.getValue('color-theme') || this.colorTheme;
         const normalized = labels[value] || value;
-        const storedLabel = Object.keys(labels).find((label) => labels[label] === normalized) || normalized;
-        if (storedLabel !== value) {
-            this.settings.setValue('color-theme', storedLabel);
+        if (normalized !== value) {
+            this.settings.setValue('color-theme', normalized);
         }
         return normalized;
     }
