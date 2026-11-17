@@ -354,8 +354,9 @@ class TuxWetterDesklet extends Desklet.Desklet {
         };
         const value = this.settings.getValue('color-theme') || this.colorTheme;
         const normalized = labels[value] || value;
-        if (normalized !== value) {
-            this.settings.setValue('color-theme', normalized);
+        const storedLabel = Object.keys(labels).find((label) => labels[label] === normalized) || normalized;
+        if (storedLabel !== value) {
+            this.settings.setValue('color-theme', storedLabel);
         }
         return normalized;
     }
@@ -407,6 +408,8 @@ class TuxWetterDesklet extends Desklet.Desklet {
         const scale = Math.max(0.5, Math.min(1, Number(this.scalePercent) / 100 || 0.72));
         const theme = this._getTheme();
         this.card.set_scale(scale, scale);
+        this.content.set_width(CARD_WIDTH * scale);
+        this.content.set_height(CARD_HEIGHT * scale);
         this.card.opacity = 255;
         this.card.set_style('background-color: transparent;');
         this._updateGradient(theme);
