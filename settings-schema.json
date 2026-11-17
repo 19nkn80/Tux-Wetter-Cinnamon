@@ -58,6 +58,11 @@
     },
     "description": "Farbverlauf auswählen"
   },
+  "apply-settings": {
+    "type": "button",
+    "description": "Änderungen übernehmen",
+    "callback": "on_apply_settings_pressed"
+  },
   "temperature-unit": {
     "type": "combobox",
     "default": "celsius",

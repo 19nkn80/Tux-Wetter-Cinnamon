@@ -385,15 +385,30 @@ class TuxWetterDesklet extends Desklet.Desklet {
     _updateGradient(theme) {
         const start = this._hexToRgb(theme[0]);
         const end = this._hexToRgb(theme[1]);
-        this.gradientStrips.forEach((strip, index) => {
-            const factor = index / (this.gradientStrips.length - 1);
+        this.gradientStrips.forEach((strip) => {
+            this.background.remove_child(strip);
+            strip.destroy();
+        });
+        this.gradientStrips = [];
+        for (let index = 0; index < 10; index++) {
+            const factor = index / 9;
             const color = [
                 Math.round((start[0] + (end[0] - start[0]) * factor) * 255),
                 Math.round((start[1] + (end[1] - start[1]) * factor) * 255),
                 Math.round((start[2] + (end[2] - start[2]) * factor) * 255)
             ];
-            strip.set_style('background-color: rgb(' + color.join(',') + ');');
-        });
+            const strip = new St.Widget({
+                style: 'background-color: rgb(' + color.join(',') + ');'
+            });
+            strip.set_height(70);
+            strip.set_x_expand(true);
+            this.background.add_child(strip);
+            this.gradientStrips.push(strip);
+        }
+    }
+
+    on_apply_settings_pressed() {
+        this._applyAppearance();
     }
 
     on_location_search_pressed() {
