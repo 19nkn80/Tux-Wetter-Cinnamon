@@ -79,10 +79,12 @@ class TuxWetterDesklet extends Desklet.Desklet {
         this.background.set_height(700);
         this.gradientStrips = [];
         for (let i = 0; i < 10; i++) {
-            const strip = new Clutter.Actor({
-                background_color: new Clutter.Color({red: 61, green: 85, blue: 201, alpha: 255})
-            });
+            const strip = new Clutter.Actor();
+            strip.set_background_color(new Clutter.Color({
+                red: 61, green: 85, blue: 201, alpha: 255
+            }));
             strip.set_height(70);
+            strip.set_width(760);
             strip.set_x_expand(true);
             this.background.add_child(strip);
             this.gradientStrips.push(strip);
@@ -393,19 +395,23 @@ class TuxWetterDesklet extends Desklet.Desklet {
                 Math.round((start[1] + (end[1] - start[1]) * factor) * 255),
                 Math.round((start[2] + (end[2] - start[2]) * factor) * 255)
             ];
-            const strip = new Clutter.Actor({
-                background_color: new Clutter.Color({
-                    red: color[0],
-                    green: color[1],
-                    blue: color[2],
-                    alpha: 255
-                })
-            });
+            const strip = new Clutter.Actor();
+            strip.set_background_color(new Clutter.Color({
+                red: color[0],
+                green: color[1],
+                blue: color[2],
+                alpha: 255
+            }));
             strip.set_height(70);
+            strip.set_width(760);
             strip.set_x_expand(true);
             this.background.add_child(strip);
             this.gradientStrips.push(strip);
         }
+        this.background.set_width(760);
+        this.background.set_height(700);
+        this.background.queue_redraw();
+        this.card.queue_redraw();
     }
 
     on_apply_settings_pressed() {
