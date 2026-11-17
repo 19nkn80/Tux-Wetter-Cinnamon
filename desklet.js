@@ -9,6 +9,7 @@ const Settings = imports.ui.settings;
 const REPOSITORY = '19nkn80/Tux-Wetter-Cinnamon';
 const RAW_BASE_URL = 'https://raw.githubusercontent.com/' + REPOSITORY + '/main/';
 const LOCAL_VERSION = '1.16.0';
+const GRADIENT_STRIP_COUNT = 100;
 
 class TuxWetterDesklet extends Desklet.Desklet {
     constructor(metadata, desklet_id) {
@@ -64,6 +65,7 @@ class TuxWetterDesklet extends Desklet.Desklet {
         this.settings.bind('bg-color', 'bgColor', this._onSettingsChanged.bind(this));
         this.settings.bind('opacity', 'opacity', this._onSettingsChanged.bind(this));
         this.settings.bind('desklet-scale', 'scalePercent', this._onSettingsChanged.bind(this));
+        this._normalizeColorThemeSetting();
         
         this.card = new St.Widget({
             layout_manager: new Clutter.BinLayout(),
@@ -78,12 +80,12 @@ class TuxWetterDesklet extends Desklet.Desklet {
         this.background.set_width(760);
         this.background.set_height(700);
         this.gradientStrips = [];
-        for (let i = 0; i < 10; i++) {
+        for (let i = 0; i < GRADIENT_STRIP_COUNT; i++) {
             const strip = new Clutter.Actor();
             strip.set_background_color(new Clutter.Color({
                 red: 61, green: 85, blue: 201, alpha: 255
             }));
-            strip.set_height(70);
+            strip.set_height(7);
             strip.set_width(760);
             strip.set_x_expand(true);
             this.background.add_child(strip);
@@ -331,12 +333,29 @@ class TuxWetterDesklet extends Desklet.Desklet {
             sonnenuntergang: 'Sonnenuntergang',
             schiefer: 'Schiefer'
         };
-        const storedValue = this.settings.getValue('color-theme') || this.colorTheme;
+        const storedValue = this._normalizeColorThemeSetting();
         const selectedTheme = themes[storedValue]
             ? storedValue
             : Object.keys(labels).find((key) => labels[key] === storedValue) || 'nacht';
         this.colorTheme = selectedTheme;
         return themes[selectedTheme];
+    }
+
+    _normalizeColorThemeSetting() {
+        const labels = {
+            'Nachtblau': 'nacht',
+            'Violett': 'violett',
+            'Ozean': 'ozean',
+            'Smaragd': 'smaragd',
+            'Sonnenuntergang': 'sonnenuntergang',
+            'Schiefer': 'schiefer'
+        };
+        const value = this.settings.getValue('color-theme') || this.colorTheme;
+        const normalized = labels[value] || value;
+        if (normalized !== value) {
+            this.settings.setValue('color-theme', normalized);
+        }
+        return normalized;
     }
 
     _hexToRgb(value) {
@@ -399,8 +418,8 @@ class TuxWetterDesklet extends Desklet.Desklet {
             strip.destroy();
         });
         this.gradientStrips = [];
-        for (let index = 0; index < 10; index++) {
-            const factor = index / 9;
+        for (let index = 0; index < GRADIENT_STRIP_COUNT; index++) {
+            const factor = index / (GRADIENT_STRIP_COUNT - 1);
             const color = [
                 Math.round((start[0] + (end[0] - start[0]) * factor) * 255),
                 Math.round((start[1] + (end[1] - start[1]) * factor) * 255),
@@ -413,7 +432,7 @@ class TuxWetterDesklet extends Desklet.Desklet {
                 blue: color[2],
                 alpha: 255
             }));
-            strip.set_height(70);
+            strip.set_height(7);
             strip.set_width(760);
             strip.set_x_expand(true);
             this.background.add_child(strip);
