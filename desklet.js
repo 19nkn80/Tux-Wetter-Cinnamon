@@ -323,9 +323,20 @@ class TuxWetterDesklet extends Desklet.Desklet {
             sonnenuntergang: ['#e05b68', '#6c43c7'],
             schiefer: ['#718bc2', '#2d4dca']
         };
-        const selectedTheme = this.settings.getValue('color-theme') || this.colorTheme;
+        const labels = {
+            nacht: 'Nachtblau',
+            violett: 'Violett',
+            ozean: 'Ozean',
+            smaragd: 'Smaragd',
+            sonnenuntergang: 'Sonnenuntergang',
+            schiefer: 'Schiefer'
+        };
+        const storedValue = this.settings.getValue('color-theme') || this.colorTheme;
+        const selectedTheme = themes[storedValue]
+            ? storedValue
+            : Object.keys(labels).find((key) => labels[key] === storedValue) || 'nacht';
         this.colorTheme = selectedTheme;
-        return themes[selectedTheme] || themes.nacht;
+        return themes[selectedTheme];
     }
 
     _hexToRgb(value) {
