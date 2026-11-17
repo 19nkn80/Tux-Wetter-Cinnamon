@@ -58,4 +58,4 @@ Falls Daten nicht laden:
 
 ## Version
 
-v1.14.0 - Lesbare zweizeilige Wetterinformationen und vergrößerte Bedienflächen
+v1.15.0 - Native St-Farbstreifen statt Cairo-Zeichenfläche für zuverlässige Verläufe
