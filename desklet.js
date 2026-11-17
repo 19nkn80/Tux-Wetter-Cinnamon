@@ -7,7 +7,7 @@ const Settings = imports.ui.settings;
 
 const REPOSITORY = '19nkn80/Tux-Wetter-Cinnamon';
 const RAW_BASE_URL = 'https://raw.githubusercontent.com/' + REPOSITORY + '/main/';
-const LOCAL_VERSION = '1.1.0';
+const LOCAL_VERSION = '1.1.1';
 
 class TuxWetterDesklet extends Desklet.Desklet {
     constructor(metadata, desklet_id) {
@@ -16,12 +16,16 @@ class TuxWetterDesklet extends Desklet.Desklet {
         this.location = '52.52,13.405';
         this.locationName = 'Lüchow';
         this.updateInterval = 30;
+        this.temperatureUnit = 'celsius';
+        this.windUnit = 'kmh';
         this.showHumidity = true;
         this.showPrecipitation = true;
         this.showSunriseSunset = true;
         this.settings = new Settings.DeskletSettings(this, this.metadata.uuid, desklet_id);
         this.settings.bind('location', 'location', this._onSettingsChanged.bind(this));
         this.settings.bind('location-name', 'locationName', this._onSettingsChanged.bind(this));
+        this.settings.bind('temperature-unit', 'temperatureUnit', this._onSettingsChanged.bind(this));
+        this.settings.bind('wind-unit', 'windUnit', this._onSettingsChanged.bind(this));
         this.settings.bind('update-interval', 'updateInterval', this._onSettingsChanged.bind(this));
         this.settings.bind('show-humidity', 'showHumidity', this._onSettingsChanged.bind(this));
         this.settings.bind('show-precipitation', 'showPrecipitation', this._onSettingsChanged.bind(this));
@@ -152,6 +156,19 @@ class TuxWetterDesklet extends Desklet.Desklet {
                 this._fetchData();
                 return true;
             }
+
+            _formatTemperature(value) {
+                if (this.temperatureUnit === 'fahrenheit') {
+                    return Math.round((value * 9 / 5) + 32) + '°F';
+                }
+                return Math.round(value) + '°C';
+            }
+
+            _formatWind(value) {
+                if (this.windUnit === 'ms') return (value / 3.6).toFixed(1) + ' m/s';
+                if (this.windUnit === 'mph') return (value / 1.60934).toFixed(1) + ' mph';
+                return Math.round(value) + ' km/h';
+            }
         );
     }
 
@@ -242,12 +259,12 @@ class TuxWetterDesklet extends Desklet.Desklet {
             if (!j.current) return;
             
             let c = j.current;
-            this.tempLabel.set_text(Math.round(c.temperature_2m) + '°');
+            this.tempLabel.set_text(this._formatTemperature(c.temperature_2m));
             this.descLabel.set_text(this._getDesc(c.weather_code));
-            this.windLabel.set_text(Math.round(c.wind_speed_10m) + ' km/h');
+            this.windLabel.set_text(this._formatWind(c.wind_speed_10m));
             this.rainLabel.set_text(Math.round(c.precipitation_probability) + '%');
             this.humidLabel.set_text(c.relative_humidity_2m + '%');
-            this.feelsLabel.set_text('gefühlt ' + Math.round(c.apparent_temperature) + '°C');
+            this.feelsLabel.set_text('gefühlt ' + this._formatTemperature(c.apparent_temperature));
             this.uvLabel.set_text('☀️ UV ' + Math.round(c.uv_index));
             
             if (j.daily) {
@@ -255,9 +272,10 @@ class TuxWetterDesklet extends Desklet.Desklet {
                 const ss = j.daily.sunset[0].split('T')[1].substring(0, 5);
                 this.sunriseLabel.set_text('🌅 Aufgang ' + sr);
                 this.sunsetLabel.set_text('🌇 Untergang ' + ss);
-                const tmin = Math.round(j.daily.temperature_2m_min[0]);
-                const tmax = Math.round(j.daily.temperature_2m_max[0]);
-                this.minmaxLabel.set_text(tmin + '°C/' + tmax + '°C');
+                this.minmaxLabel.set_text(
+                    this._formatTemperature(j.daily.temperature_2m_min[0]) + '/' +
+                    this._formatTemperature(j.daily.temperature_2m_max[0])
+                );
             }
             
             if (j.hourly && j.hourly.temperature_2m && j.hourly.weather_code) {
@@ -268,7 +286,7 @@ class TuxWetterDesklet extends Desklet.Desklet {
                     if (h < j.hourly.temperature_2m.length) {
                         this.hourlyLabels[i].t.set_text((h % 24).toString().padStart(2, '0') + ':00');
                         this.hourlyLabels[i].ic.set_text(this._getIcon(j.hourly.weather_code[h]));
-                        this.hourlyLabels[i].te.set_text(Math.round(j.hourly.temperature_2m[h]) + '°');
+                        this.hourlyLabels[i].te.set_text(this._formatTemperature(j.hourly.temperature_2m[h]));
                     }
                 }
             }
@@ -280,8 +298,8 @@ class TuxWetterDesklet extends Desklet.Desklet {
                         const filled = Math.round(pct / 20);
                         const bar = '█'.repeat(filled) + '░'.repeat(5 - filled);
                         this.dailyLabels[i].dic.set_text(this._getIcon(j.daily.weather_code[i]));
-                        this.dailyLabels[i].dmin.set_text(Math.round(j.daily.temperature_2m_min[i]) + '°');
-                        this.dailyLabels[i].dmax.set_text(Math.round(j.daily.temperature_2m_max[i]) + '°');
+                        this.dailyLabels[i].dmin.set_text(this._formatTemperature(j.daily.temperature_2m_min[i]));
+                        this.dailyLabels[i].dmax.set_text(this._formatTemperature(j.daily.temperature_2m_max[i]));
                         this.dailyLabels[i].dbar.set_text(bar);
                     }
                 }
@@ -292,6 +310,7 @@ class TuxWetterDesklet extends Desklet.Desklet {
     }
 
     on_desklet_added_to_desktop() {
+        this._onSettingsChanged();
         this._fetchData();
         this._restartUpdateTimer();
     }
