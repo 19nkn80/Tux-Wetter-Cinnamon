@@ -408,8 +408,8 @@ class TuxWetterDesklet extends Desklet.Desklet {
         const scale = Math.max(0.5, Math.min(1, Number(this.scalePercent) / 100 || 0.72));
         const theme = this._getTheme();
         this.card.set_scale(scale, scale);
-        this.content.set_width(CARD_WIDTH * scale);
-        this.content.set_height(CARD_HEIGHT * scale);
+        this.content.set_width(CARD_WIDTH);
+        this.content.set_height(CARD_HEIGHT);
         this.card.opacity = 255;
         this.card.set_style('background-color: transparent;');
         this._updateGradient(theme);
