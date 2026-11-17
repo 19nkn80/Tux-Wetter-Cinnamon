@@ -49,12 +49,12 @@
     "type": "combobox",
     "default": "nacht",
     "options": {
-      "nacht": "Nachtblau",
-      "violett": "Violett",
-      "ozean": "Ozean",
-      "smaragd": "Smaragd",
-      "sonnenuntergang": "Sonnenuntergang",
-      "schiefer": "Schiefer"
+      "Nachtblau": "nacht",
+      "Violett": "violett",
+      "Ozean": "ozean",
+      "Smaragd": "smaragd",
+      "Sonnenuntergang": "sonnenuntergang",
+      "Schiefer": "schiefer"
     },
     "description": "Farbverlauf auswählen"
   },
