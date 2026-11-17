@@ -58,4 +58,4 @@ Falls Daten nicht laden:
 
 ## Version
 
-v1.9.0 - Mond, Pollen, Warnungen und anklickbare Temperaturkurven
+v1.10.0 - Kompaktere Karte und flüssigere Einstellungen ohne Mehrfachabfragen

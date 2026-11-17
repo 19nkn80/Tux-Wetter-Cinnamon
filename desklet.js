@@ -9,7 +9,7 @@ const Settings = imports.ui.settings;
 
 const REPOSITORY = '19nkn80/Tux-Wetter-Cinnamon';
 const RAW_BASE_URL = 'https://raw.githubusercontent.com/' + REPOSITORY + '/main/';
-const LOCAL_VERSION = '1.9.0';
+const LOCAL_VERSION = '1.10.0';
 
 class TuxWetterDesklet extends Desklet.Desklet {
     constructor(metadata, desklet_id) {
@@ -66,7 +66,11 @@ class TuxWetterDesklet extends Desklet.Desklet {
         });
         this.card.set_width(760);
         this.card.set_height(700);
+        this.card.set_scale(0.72, 0.72);
+        this.card.set_pivot_point(0, 0);
         this.background = new St.DrawingArea();
+        this.background.set_width(760);
+        this.background.set_height(700);
         this.background.set_x_expand(true);
         this.background.set_y_expand(true);
         this.background.connect('repaint', () => this._paintBackground());
@@ -233,6 +237,7 @@ class TuxWetterDesklet extends Desklet.Desklet {
             imports.misc.util.spawnCommandLine('xdg-open https://github.com/' + REPOSITORY);
         });
         this._timeout = 0;
+        this._settingsTimeout = 0;
     }
 
     _onSettingsChanged() {
@@ -250,9 +255,22 @@ class TuxWetterDesklet extends Desklet.Desklet {
         this.warningLabel.visible = this.showWarnings && this.warningLabel.text !== '';
         this.hourlyBox.visible = !this.compactMode;
         this.dailyBox.visible = !this.compactMode;
+        if (!this.showTemperatureCurve) {
+            this.curveLabel.visible = false;
+            this.curveArea.visible = false;
+        }
         this._applyAppearance();
-        this._restartUpdateTimer();
-        this._fetchData();
+        if (this._settingsTimeout) GLib.source_remove(this._settingsTimeout);
+        this._settingsTimeout = GLib.timeout_add(
+            GLib.PRIORITY_DEFAULT,
+            350,
+            () => {
+                this._restartUpdateTimer();
+                this._fetchData();
+                this._settingsTimeout = 0;
+                return false;
+            }
+        );
     }
 
     _getSavedLocationEntries() {
@@ -847,6 +865,10 @@ class TuxWetterDesklet extends Desklet.Desklet {
         if (this._timeout) {
             GLib.source_remove(this._timeout);
             this._timeout = 0;
+        }
+        if (this._settingsTimeout) {
+            GLib.source_remove(this._settingsTimeout);
+            this._settingsTimeout = 0;
         }
     }
 
