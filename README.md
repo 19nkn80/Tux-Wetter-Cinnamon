@@ -13,6 +13,9 @@ Ein Weather-Desklet für Cinnamon Desktop Environment 6.6.9+
 ✅ **Mehrere Orte** - Ortsliste mit Pfeilnavigation und Zahnrad für Einstellungen
 ✅ **Zusätzliche Wetterdaten** - Windrichtung, Luftqualitätsindex und Regenwahrscheinlichkeit
 ✅ **Ortssteuerung** - Pfeile, Mausrad, Rechtsklick und automatische IP-Ortung
+✅ **Mond und Pollen** - Mondphase/-zeiten und sechs Pollenarten
+✅ **Warnungen** - DWD- und GeoSphere-Austria-Warnungen ohne API-Key
+✅ **Temperaturkurve** - Tagesverlauf per Klick auf eine Tageszeile
 ✅ **Einfache Installation** - Plug & Play für Cinnamon
 
 ## Installation
@@ -55,4 +58,4 @@ Falls Daten nicht laden:
 
 ## Version
 
-v1.8.0 - Cairo-Kartenhintergrund, Wetterzusatzdaten und erweiterte Ortssteuerung
+v1.9.0 - Mond, Pollen, Warnungen und anklickbare Temperaturkurven

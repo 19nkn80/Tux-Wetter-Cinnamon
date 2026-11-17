@@ -9,7 +9,7 @@ const Settings = imports.ui.settings;
 
 const REPOSITORY = '19nkn80/Tux-Wetter-Cinnamon';
 const RAW_BASE_URL = 'https://raw.githubusercontent.com/' + REPOSITORY + '/main/';
-const LOCAL_VERSION = '1.8.0';
+const LOCAL_VERSION = '1.9.0';
 
 class TuxWetterDesklet extends Desklet.Desklet {
     constructor(metadata, desklet_id) {
@@ -28,6 +28,11 @@ class TuxWetterDesklet extends Desklet.Desklet {
         this.showUvIndex = true;
         this.showPrecipitation = true;
         this.showSunriseSunset = true;
+        this.showAirQuality = true;
+        this.showPollen = true;
+        this.showMoon = true;
+        this.showWarnings = true;
+        this.showTemperatureCurve = true;
         this.compactMode = false;
         this.textColor = '#ffffff';
         this.bgColor = '#16161d';
@@ -46,6 +51,11 @@ class TuxWetterDesklet extends Desklet.Desklet {
         this.settings.bind('show-uv-index', 'showUvIndex', this._onSettingsChanged.bind(this));
         this.settings.bind('show-precipitation', 'showPrecipitation', this._onSettingsChanged.bind(this));
         this.settings.bind('show-sunrise-sunset', 'showSunriseSunset', this._onSettingsChanged.bind(this));
+        this.settings.bind('show-air-quality', 'showAirQuality', this._onSettingsChanged.bind(this));
+        this.settings.bind('show-pollen', 'showPollen', this._onSettingsChanged.bind(this));
+        this.settings.bind('show-moon', 'showMoon', this._onSettingsChanged.bind(this));
+        this.settings.bind('show-warnings', 'showWarnings', this._onSettingsChanged.bind(this));
+        this.settings.bind('show-temperature-curve', 'showTemperatureCurve', this._onSettingsChanged.bind(this));
         this.settings.bind('compact-mode', 'compactMode', this._onSettingsChanged.bind(this));
         this.settings.bind('text-color', 'textColor', this._onSettingsChanged.bind(this));
         this.settings.bind('bg-color', 'bgColor', this._onSettingsChanged.bind(this));
@@ -55,7 +65,7 @@ class TuxWetterDesklet extends Desklet.Desklet {
             layout_manager: new Clutter.BinLayout()
         });
         this.card.set_width(760);
-        this.card.set_height(600);
+        this.card.set_height(700);
         this.background = new St.DrawingArea();
         this.background.set_x_expand(true);
         this.background.set_y_expand(true);
@@ -147,6 +157,19 @@ class TuxWetterDesklet extends Desklet.Desklet {
         this.rainNowLabel = new St.Label({text: 'Regen: --', style: 'font-size: 19px; color: #fff;'});
         infoBox.add(this.rainNowLabel);
         this.mainBox.add(infoBox);
+
+        this.moonLabel = new St.Label({
+            text: '🌙 Mond: --',
+            style: 'font-size: 17px; color: #fff; margin-bottom: 12px;'
+        });
+        this.mainBox.add(this.moonLabel);
+
+        this.warningLabel = new St.Label({
+            text: '',
+            style: 'font-size: 18px; color: #fff; background-color: rgba(180, 45, 50, 0.75); padding: 6px 10px; margin-bottom: 10px;'
+        });
+        this.warningLabel.visible = false;
+        this.mainBox.add(this.warningLabel);
         
         const dailyBox = new St.BoxLayout({vertical: true, style: 'border-top: 1px solid rgba(255,255,255,0.3); padding-top: 10px;'});
         this.dailyBox = dailyBox;
@@ -154,6 +177,11 @@ class TuxWetterDesklet extends Desklet.Desklet {
         const days = ['Heute', 'Morgen', 'Sa', 'So', 'Mo'];
         for (let i = 0; i < 5; i++) {
             const d = new St.BoxLayout({vertical: false, style: 'margin-bottom: 6px;'});
+            d.reactive = true;
+            d.connect('button-press-event', () => {
+                this._showDayCurve(i);
+                return Clutter.EVENT_STOP;
+            });
             const dn = new St.Label({text: days[i], style: 'font-size: 21px; color: #eee; width: 105px;'});
             d.add(dn);
             const dic = new St.Label({text: '☁️', style: 'font-size: 27px; width: 50px;'});
@@ -170,6 +198,19 @@ class TuxWetterDesklet extends Desklet.Desklet {
             this.dailyLabels.push({dn, dic, rain, dmin, dmax, dbar});
         }
         this.mainBox.add(dailyBox);
+
+        this.curveLabel = new St.Label({
+            text: 'Temperaturverlauf',
+            style: 'font-size: 17px; color: #fff; margin-top: 8px;'
+        });
+        this.curveLabel.visible = false;
+        this.mainBox.add(this.curveLabel);
+        this.curveArea = new St.DrawingArea();
+        this.curveArea.set_height(100);
+        this.curveArea.set_x_expand(true);
+        this.curveArea.connect('repaint', () => this._paintCurve());
+        this.curveArea.visible = false;
+        this.mainBox.add(this.curveArea);
         
         this.setContent(this.card);
         this.card.reactive = true;
@@ -203,6 +244,10 @@ class TuxWetterDesklet extends Desklet.Desklet {
         this.rainLabel.visible = this.showPrecipitation;
         this.sunriseLabel.visible = this.showSunriseSunset;
         this.sunsetLabel.visible = this.showSunriseSunset;
+        this.airLabel.visible = this.showAirQuality;
+        this.pollenLabel.visible = this.showPollen;
+        this.moonLabel.visible = this.showMoon;
+        this.warningLabel.visible = this.showWarnings && this.warningLabel.text !== '';
         this.hourlyBox.visible = !this.compactMode;
         this.dailyBox.visible = !this.compactMode;
         this._applyAppearance();
@@ -274,6 +319,47 @@ class TuxWetterDesklet extends Desklet.Desklet {
         cr.setLineWidth(1);
         cr.stroke();
         cr.$dispose();
+    }
+
+    _paintCurve() {
+        const values = this.curveValues || [];
+        if (values.length < 2) return;
+        const [width, height] = this.curveArea.get_surface_size();
+        if (width <= 0 || height <= 0) return;
+        const cr = this.curveArea.get_context();
+        const min = Math.min.apply(null, values);
+        const max = Math.max.apply(null, values);
+        const range = Math.max(1, max - min);
+        cr.setSourceRGBA(1, 1, 1, 0.25);
+        cr.setLineWidth(1);
+        for (let i = 1; i < 4; i++) {
+            const y = (height * i) / 4;
+            cr.moveTo(0, y);
+            cr.lineTo(width, y);
+        }
+        cr.stroke();
+        cr.setSourceRGBA(1, 0.85, 0.2, 1);
+        cr.setLineWidth(3);
+        values.forEach((value, index) => {
+            const x = (width * index) / (values.length - 1);
+            const y = height - ((value - min) / range) * (height - 10) - 5;
+            if (index === 0) cr.moveTo(x, y);
+            else cr.lineTo(x, y);
+        });
+        cr.stroke();
+        cr.$dispose();
+    }
+
+    _showDayCurve(dayIndex) {
+        if (!this.showTemperatureCurve || !this.hourlyData || !this.hourlyData.temperature_2m) return;
+        const currentHour = new Date().getHours();
+        const start = currentHour + dayIndex * 24;
+        this.curveValues = this.hourlyData.temperature_2m.slice(start, start + 24);
+        if (this.curveValues.length < 2) return;
+        this.curveLabel.set_text('Temperaturverlauf – ' + this.dailyLabels[dayIndex].dn.text);
+        this.curveLabel.visible = true;
+        this.curveArea.visible = true;
+        this.curveArea.queue_repaint();
     }
 
     _applyAppearance() {
@@ -355,6 +441,12 @@ class TuxWetterDesklet extends Desklet.Desklet {
         return Math.round(value) + '°C';
     }
 
+    _formatTime(value) {
+        const text = String(value || '');
+        if (text.indexOf('T') >= 0) return text.split('T')[1].substring(0, 5);
+        return text.substring(0, 5) || '--:--';
+    }
+
     _formatWind(value) {
         if (this.windUnit === 'ms') return (value / 3.6).toFixed(1) + ' m/s';
         if (this.windUnit === 'mph') return (value / 1.60934).toFixed(1) + ' mph';
@@ -377,6 +469,71 @@ class TuxWetterDesklet extends Desklet.Desklet {
             throw new Error('Download fehlgeschlagen');
         }
         return result[1].toString();
+    }
+
+    _fetchMoon() {
+        const coordinates = String(this.location).split(',');
+        const now = new Date();
+        const date = now.getFullYear() + '-' +
+            String(now.getMonth() + 1).padStart(2, '0') + '-' +
+            String(now.getDate()).padStart(2, '0');
+        const result = JSON.parse(this._fetchText(
+            'https://aa.usno.navy.mil/api/rstt/oneday?date=' + date +
+            '&coords=' + coordinates[0] + ',' + coordinates[1]
+        ));
+        const data = result.properties.data;
+        const rise = data.moondata.find((item) => item.phen === 'Rise');
+        const set = data.moondata.find((item) => item.phen === 'Set');
+        return {
+            phase: data.curphase,
+            illumination: data.fracillum,
+            rise: rise ? rise.time : '--:--',
+            set: set ? set.time : '--:--'
+        };
+    }
+
+    _pollenText(value) {
+        const amount = Number(value || 0);
+        if (amount < 1) return 'gering';
+        if (amount < 10) return 'mäßig';
+        return 'hoch';
+    }
+
+    _fetchLocalWarning() {
+        const raw = this._fetchText(
+            'https://www.dwd.de/DWD/warnungen/warnapp/json/warnings.json'
+        );
+        const match = raw.match(/loadWarnings\((\{.*\})\);?\s*$/s);
+        if (!match) throw new Error('DWD-Warnungsformat unbekannt');
+        const data = JSON.parse(match[1]);
+        const target = String(this.locationName || '').split(',')[0].toLowerCase();
+        const warnings = [];
+        Object.keys(data.warnings || {}).forEach((key) => {
+            (data.warnings[key] || []).forEach((warning) => {
+                const region = String(warning.regionName || '').toLowerCase();
+                if (!target || region.indexOf(target) >= 0) warnings.push(warning);
+            });
+        });
+        warnings.sort((left, right) => Number(right.level || 0) - Number(left.level || 0));
+        return warnings[0] || null;
+    }
+
+    _fetchAustrianWarning() {
+        const coordinates = String(this.location).split(',');
+        const latitude = Number(coordinates[0]);
+        const longitude = Number(coordinates[1]);
+        if (latitude < 46.3 || latitude > 49.1 || longitude < 9.5 || longitude > 17.2) {
+            return null;
+        }
+        const data = JSON.parse(this._fetchText(
+            'https://warnungen.zamg.at/wsapp/api/getWarningsForCoords?lon=' +
+            coordinates[1] + '&lat=' + coordinates[0] + '&lang=de'
+        ));
+        const warnings = data.properties && data.properties.warnings || [];
+        warnings.sort((left, right) =>
+            Number(right.properties.warnstufeid || 0) - Number(left.properties.warnstufeid || 0)
+        );
+        return warnings.length ? warnings[0].properties : null;
     }
 
     _checkForUpdate() {
@@ -563,7 +720,7 @@ class TuxWetterDesklet extends Desklet.Desklet {
                 air = JSON.parse(this._fetchText(
                     'https://air-quality-api.open-meteo.com/v1/air-quality?latitude=' +
                     latitude + '&longitude=' + longitude +
-                    '&current=european_aqi,pm2_5,pm10&timezone=auto'
+                    '&current=european_aqi,pm2_5,pm10&hourly=alder_pollen,birch_pollen,grass_pollen,mugwort_pollen,olive_pollen,ragweed_pollen&timezone=auto&forecast_days=1'
                 ));
             } catch (e) {
                 global.logError('TuX-Wetter Luftqualitätsdaten: ' + e);
@@ -582,6 +739,55 @@ class TuxWetterDesklet extends Desklet.Desklet {
             if (air && air.current) {
                 this.airLabel.set_text('Luft: ' + Math.round(air.current.european_aqi));
             }
+            if (air && air.hourly) {
+                const pollenValues = [
+                    air.hourly.alder_pollen,
+                    air.hourly.birch_pollen,
+                    air.hourly.grass_pollen,
+                    air.hourly.mugwort_pollen,
+                    air.hourly.olive_pollen,
+                    air.hourly.ragweed_pollen
+                ].map((values) => Number(values && values[new Date().getHours()] || 0));
+                this.pollenLabel.set_text('Pollen: ' + this._pollenText(Math.max.apply(null, pollenValues)));
+            }
+            if (this.showMoon) {
+                try {
+                    const moon = this._fetchMoon();
+                    this.moonLabel.set_text(
+                        '🌙 ' + moon.phase + ' (' + moon.illumination +
+                        ') · Aufgang ' + moon.rise + ' · Untergang ' + moon.set
+                    );
+                } catch (e) {
+                    global.logError('TuX-Wetter Monddaten: ' + e);
+                    this.moonLabel.set_text('🌙 Mond: nicht verfügbar');
+                }
+            }
+            if (c.weather_code >= 95) {
+                this.warningLabel.set_text('⚠ Unwetterhinweis: ' + this._getDesc(c.weather_code));
+                this.warningLabel.visible = true;
+            } else {
+                this.warningLabel.visible = false;
+            }
+            if (this.showWarnings) {
+                try {
+                    let warning = null;
+                    try {
+                        warning = this._fetchLocalWarning();
+                    } catch (dwdError) {
+                        global.logError('TuX-Wetter DWD-Warnungen: ' + dwdError);
+                    }
+                    if (!warning) warning = this._fetchAustrianWarning();
+                    if (warning) {
+                        this.warningLabel.set_text(
+                            '⚠ ' + (warning.event || warning.text || 'Wetterwarnung') + ': ' +
+                            String(warning.description || warning.meteotext || '').substring(0, 180)
+                        );
+                        this.warningLabel.visible = true;
+                    }
+                } catch (e) {
+                    global.logError('TuX-Wetter regionale Warnungen: ' + e);
+                }
+            }
             this.feelsLabel.set_text(
                 'gefühlt ' + this._formatTemperature(c.apparent_temperature) + '    ' +
                 (j.daily ? this._formatTemperature(j.daily.temperature_2m_max[0]) : '--') + ' / ' +
@@ -589,13 +795,14 @@ class TuxWetterDesklet extends Desklet.Desklet {
             );
             
             if (j.daily) {
-                const sr = j.daily.sunrise[0].split('T')[1].substring(0, 5);
-                const ss = j.daily.sunset[0].split('T')[1].substring(0, 5);
+                const sr = this._formatTime(j.daily.sunrise[0]);
+                const ss = this._formatTime(j.daily.sunset[0]);
                 this.sunriseLabel.set_text('🌅 Aufgang ' + sr);
                 this.sunsetLabel.set_text('🌇 Untergang ' + ss);
             }
             
             if (j.hourly && j.hourly.temperature_2m && j.hourly.weather_code) {
+                this.hourlyData = j.hourly;
                 const now = new Date();
                 const idx = now.getHours();
                 for (let i = 0; i < 6; i++) {
