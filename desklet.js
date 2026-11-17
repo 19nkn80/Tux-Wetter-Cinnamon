@@ -9,7 +9,7 @@ const Settings = imports.ui.settings;
 
 const REPOSITORY = '19nkn80/Tux-Wetter-Cinnamon';
 const RAW_BASE_URL = 'https://raw.githubusercontent.com/' + REPOSITORY + '/main/';
-const LOCAL_VERSION = '1.10.0';
+const LOCAL_VERSION = '1.11.0';
 
 class TuxWetterDesklet extends Desklet.Desklet {
     constructor(metadata, desklet_id) {
@@ -37,6 +37,7 @@ class TuxWetterDesklet extends Desklet.Desklet {
         this.textColor = '#ffffff';
         this.bgColor = '#16161d';
         this.opacity = 92;
+        this.scalePercent = 72;
         this.settings = new Settings.DeskletSettings(this, this.metadata.uuid, desklet_id);
         this.settings.bind('location', 'location', this._onSettingsChanged.bind(this));
         this.settings.bind('location-name', 'locationName', this._onSettingsChanged.bind(this));
@@ -60,6 +61,7 @@ class TuxWetterDesklet extends Desklet.Desklet {
         this.settings.bind('text-color', 'textColor', this._onSettingsChanged.bind(this));
         this.settings.bind('bg-color', 'bgColor', this._onSettingsChanged.bind(this));
         this.settings.bind('opacity', 'opacity', this._onSettingsChanged.bind(this));
+        this.settings.bind('desklet-scale', 'scalePercent', this._onSettingsChanged.bind(this));
         
         this.card = new St.Widget({
             layout_manager: new Clutter.BinLayout()
@@ -266,7 +268,6 @@ class TuxWetterDesklet extends Desklet.Desklet {
             350,
             () => {
                 this._restartUpdateTimer();
-                this._fetchData();
                 this._settingsTimeout = 0;
                 return false;
             }
@@ -382,6 +383,8 @@ class TuxWetterDesklet extends Desklet.Desklet {
 
     _applyAppearance() {
         this._backgroundAlpha = Math.max(0.85, Math.min(1, Number(this.opacity) / 100 || 0.92));
+        const scale = Math.max(0.5, Math.min(1, Number(this.scalePercent) / 100 || 0.72));
+        this.card.set_scale(scale, scale);
         this.card.opacity = 255;
         this.background.queue_repaint();
     }
@@ -873,6 +876,10 @@ class TuxWetterDesklet extends Desklet.Desklet {
     }
 
     on_desklet_clicked() {
+        this._fetchData();
+    }
+
+    on_refresh_pressed() {
         this._fetchData();
     }
 }

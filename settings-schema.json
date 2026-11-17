@@ -86,6 +86,11 @@
     "units": "Minuten",
     "description": "Aktualisierungsintervall"
   },
+  "refresh-now": {
+    "type": "button",
+    "description": "Wetterdaten jetzt aktualisieren",
+    "callback": "on_refresh_pressed"
+  },
   "show-humidity": {
     "type": "checkbox",
     "default": true,
@@ -159,5 +164,14 @@
     "step": 10,
     "units": "%",
     "description": "Deckkraft des Hintergrunds"
+  },
+  "desklet-scale": {
+    "type": "spinbutton",
+    "default": 72,
+    "min": 50,
+    "max": 100,
+    "step": 5,
+    "units": "%",
+    "description": "Größe des Desklets"
   }
 }

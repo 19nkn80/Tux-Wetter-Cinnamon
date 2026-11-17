@@ -58,4 +58,4 @@ Falls Daten nicht laden:
 
 ## Version
 
-v1.10.0 - Kompaktere Karte und flüssigere Einstellungen ohne Mehrfachabfragen
+v1.11.0 - Skalierbare Karte und flüssige Einstellungen ohne blockierende Sofortabfrage
