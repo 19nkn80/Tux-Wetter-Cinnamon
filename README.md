@@ -9,7 +9,7 @@ Ein Weather-Desklet für Cinnamon Desktop Environment 6.6.9+
 ✅ **Auto-Update** - Aktualisiert alle 30 Minuten automatisch
 ✅ **Einstellungen** - Standort, Einheiten, Sichtbarkeit und Intervall
 ✅ **GitHub-Updates** - Update-Prüfung und Installation über das Kontextmenü
-✅ **Glas-Karten-Design** - Lokales Cinnamon-Stylesheet mit sechs Farbverläufen
+✅ **Glas-Karten-Design** - Breite Karte mit sechs Stunden und fünf Tageszeilen
 ✅ **Mehrere Orte** - Ortsliste mit Pfeilnavigation und Zahnrad für Einstellungen
 ✅ **Einfache Installation** - Plug & Play für Cinnamon
 
@@ -53,4 +53,4 @@ Falls Daten nicht laden:
 
 ## Version
 
-v1.5.1 - Zuverlässige Stylesheet-Farbverläufe und Update des vollständigen Karten-Designs
+v1.6.0 - Breites Kartenlayout nach dem Referenzbild mit Stunden- und Tagesprognose

@@ -7,7 +7,7 @@ const Settings = imports.ui.settings;
 
 const REPOSITORY = '19nkn80/Tux-Wetter-Cinnamon';
 const RAW_BASE_URL = 'https://raw.githubusercontent.com/' + REPOSITORY + '/main/';
-const LOCAL_VERSION = '1.5.1';
+const LOCAL_VERSION = '1.6.0';
 
 class TuxWetterDesklet extends Desklet.Desklet {
     constructor(metadata, desklet_id) {
@@ -54,16 +54,18 @@ class TuxWetterDesklet extends Desklet.Desklet {
         
         this.mainBox = new St.BoxLayout({
             vertical: true, 
-            style_class: 'tux-wetter-card tux-wetter-theme-nacht'
+            style_class: 'tux-wetter-card tux-wetter-theme-nacht',
+            style: 'width: 760px;'
         });
         
-        const headerBox = new St.BoxLayout({vertical: false, style: 'margin-bottom: 16px;'});
+        const headerBox = new St.BoxLayout({vertical: false, style: 'margin-bottom: 18px;'});
         const headerLeft = new St.BoxLayout({vertical: true});
-        const locationBar = new St.BoxLayout({vertical: false, style: 'margin-bottom: 4px;'});
+        headerLeft.set_width(360);
+        const locationBar = new St.BoxLayout({vertical: false, style: 'margin-bottom: 2px;'});
         this.previousLocationButton = new St.Button({label: '‹', style: 'font-size: 22px; color: #d7b5ff; padding: 0 7px;'});
         this.previousLocationButton.connect('clicked', () => this._cycleLocation(-1));
         locationBar.add(this.previousLocationButton);
-        this.locationLabel = new St.Label({text: 'Lüchow', style: 'font-size: 18px; font-weight: bold; color: #fff;'});
+        this.locationLabel = new St.Label({text: 'Lüchow', style: 'font-size: 28px; font-weight: 500; color: #fff;'});
         locationBar.add(this.locationLabel);
         this.nextLocationButton = new St.Button({label: '›', style: 'font-size: 22px; color: #d7b5ff; padding: 0 7px;'});
         this.nextLocationButton.connect('clicked', () => this._cycleLocation(1));
@@ -73,92 +75,88 @@ class TuxWetterDesklet extends Desklet.Desklet {
         locationBar.add(this.settingsButton);
         headerLeft.add(locationBar);
         
-        this.tempLabel = new St.Label({text: '--°', style: 'font-size: 58px; font-weight: 900; color: #fff;'});
-        headerLeft.add(this.tempLabel);
+        const temperatureBox = new St.BoxLayout({vertical: false});
+        this.currentIcon = new St.Label({text: '☀️', style: 'font-size: 64px; margin: 4px 18px 0 0;'});
+        temperatureBox.add(this.currentIcon);
+        this.tempLabel = new St.Label({text: '--°', style: 'font-size: 86px; font-weight: 500; color: #fff;'});
+        temperatureBox.add(this.tempLabel);
+        headerLeft.add(temperatureBox);
         
         headerBox.add(headerLeft);
         
-        const headerRight = new St.BoxLayout({vertical: true, style: 'margin-left: 36px; margin-top: 6px;'});
+        const headerRight = new St.BoxLayout({vertical: true, style: 'margin-left: 20px; margin-top: 54px;'});
+        headerRight.set_width(350);
         
-        this.descLabel = new St.Label({text: 'Laden...', style: 'font-size: 16px; color: #fff; margin-bottom: 12px; font-weight: 700;'});
+        this.descLabel = new St.Label({text: 'Laden...', style: 'font-size: 27px; color: #fff; margin-bottom: 15px;'});
         headerRight.add(this.descLabel);
         
         const metricsBox = new St.BoxLayout({vertical: false});
-        this.windLabel = new St.Label({text: '-- km/h', style: 'font-size: 13px; color: #ffd700; margin-right: 20px; font-weight: bold;'});
+        this.windLabel = new St.Label({text: '💨 -- km/h', style: 'font-size: 19px; color: #fff; margin-right: 28px;'});
         metricsBox.add(this.windLabel);
-        this.rainLabel = new St.Label({text: '--%', style: 'font-size: 13px; color: #ff6b35; margin-right: 20px; font-weight: bold;'});
+        this.rainLabel = new St.Label({text: '☔ --%', style: 'font-size: 19px; color: #fff; margin-right: 28px;'});
         metricsBox.add(this.rainLabel);
-        this.humidLabel = new St.Label({text: '--%', style: 'font-size: 13px; color: #00d9ff; font-weight: bold;'});
+        this.humidLabel = new St.Label({text: '💧 --%', style: 'font-size: 19px; color: #fff;'});
         metricsBox.add(this.humidLabel);
         this.pressureLabel = new St.Label({text: '-- hPa', style: 'font-size: 11px; color: #d0d0d0; margin-top: 5px;'});
-        headerRight.add(this.pressureLabel);
         headerRight.add(metricsBox);
         
-        this.feelsLabel = new St.Label({text: 'gefühlt --°C', style: 'font-size: 13px; color: #e8e8e8; margin-top: 12px; font-weight: 600;'});
+        this.feelsLabel = new St.Label({text: 'gefühlt --°C    --° / --°', style: 'font-size: 19px; color: #e8e8e8; margin-top: 16px;'});
         headerRight.add(this.feelsLabel);
-        
-        this.minmaxLabel = new St.Label({text: '--°C/--°C', style: 'font-size: 13px; color: #e8e8e8; font-weight: 600;'});
-        headerRight.add(this.minmaxLabel);
         
         headerBox.add(headerRight);
         this.mainBox.add(headerBox);
         
-        const divider1 = new St.Label({text: '━━━━━━━━━━━━━━━━━━', style: 'font-size: 9px; color: rgba(255,255,255,0.45); margin: 8px 0;'});
-        this.mainBox.add(divider1);
-        
-        const hourlyLabel = new St.Label({text: 'STÜNDLICH', style: 'font-size: 11px; color: #ffd700; font-weight: bold; margin-bottom: 7px;'});
-        this.mainBox.add(hourlyLabel);
-        
-        const hourlyBox = new St.BoxLayout({vertical: false, style: 'margin-bottom: 10px;'});
+        const hourlyBox = new St.BoxLayout({vertical: false, style: 'margin-bottom: 18px;'});
         this.hourlyBox = hourlyBox;
         this.hourlyLabels = [];
         for (let i = 0; i < 6; i++) {
-            const h = new St.BoxLayout({vertical: true, style: 'margin-right: 14px;'});
-            const t = new St.Label({text: '18:00', style: 'font-size: 9px; color: #e8e8e8; font-weight: 700;'});
+            const h = new St.BoxLayout({vertical: true, style: 'margin-right: 31px;'});
+            const t = new St.Label({text: '18:00', style: 'font-size: 20px; color: #ddd;'});
             h.add(t);
-            const ic = new St.Label({text: '🌙', style: 'font-size: 22px; margin: 2px 0;'});
+            const ic = new St.Label({text: '🌙', style: 'font-size: 38px; margin: 7px 0;'});
             h.add(ic);
-            const te = new St.Label({text: '4°', style: 'font-size: 10px; color: #fff; font-weight: bold;'});
+            const te = new St.Label({text: '4°', style: 'font-size: 25px; color: #fff;'});
             h.add(te);
             hourlyBox.add(h);
             this.hourlyLabels.push({t, ic, te});
         }
         this.mainBox.add(hourlyBox);
         
-        const sunBox = new St.BoxLayout({vertical: false, style: 'margin-bottom: 8px;'});
-        this.sunriseLabel = new St.Label({text: '🌅 Aufgang 07:31', style: 'font-size: 13px; color: #ffd700; margin-right: 45px; font-weight: 700;'});
-        sunBox.add(this.sunriseLabel);
-        this.sunsetLabel = new St.Label({text: '🌇 Untergang 16:10', style: 'font-size: 13px; color: #ff6b35; font-weight: 700;'});
-        sunBox.add(this.sunsetLabel);
-        this.mainBox.add(sunBox);
+        const infoBox = new St.BoxLayout({vertical: false, style: 'margin-bottom: 18px;'});
+        this.sunriseLabel = new St.Label({text: '🌅 07:31', style: 'font-size: 19px; color: #fff; margin-right: 25px;'});
+        infoBox.add(this.sunriseLabel);
+        this.sunsetLabel = new St.Label({text: '🌇 16:10', style: 'font-size: 19px; color: #fff; margin-right: 25px;'});
+        infoBox.add(this.sunsetLabel);
+        this.uvLabel = new St.Label({text: '🌙 UV: 0', style: 'font-size: 19px; color: #fff; margin-right: 25px;'});
+        infoBox.add(this.uvLabel);
+        this.airLabel = new St.Label({text: 'Luft: gut', style: 'font-size: 19px; color: #fff; margin-right: 25px;'});
+        infoBox.add(this.airLabel);
+        this.pollenLabel = new St.Label({text: 'Pollen: --', style: 'font-size: 19px; color: #fff; margin-right: 25px;'});
+        infoBox.add(this.pollenLabel);
+        this.rainNowLabel = new St.Label({text: 'Regen: --', style: 'font-size: 19px; color: #fff;'});
+        infoBox.add(this.rainNowLabel);
+        this.mainBox.add(infoBox);
         
-        this.uvLabel = new St.Label({text: '☀️ UV 0', style: 'font-size: 10px; color: #00d9ff; margin-bottom: 8px; font-weight: 700;'});
-        this.mainBox.add(this.uvLabel);
-        
-        const divider2 = new St.Label({text: '━━━━━━━━━━━━━━━━━━', style: 'font-size: 9px; color: rgba(255,255,255,0.45); margin: 8px 0;'});
-        this.mainBox.add(divider2);
-        
-        const dailyLabel = new St.Label({text: '7-TAGE VORHERSAGE', style: 'font-size: 11px; color: #ffd700; font-weight: bold; margin-bottom: 8px;'});
-        this.mainBox.add(dailyLabel);
-        
-        const dailyBox = new St.BoxLayout({vertical: false});
+        const dailyBox = new St.BoxLayout({vertical: true, style: 'border-top: 1px solid rgba(255,255,255,0.3); padding-top: 10px;'});
         this.dailyBox = dailyBox;
         this.dailyLabels = [];
-        const days = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa'];
-        for (let i = 0; i < 7; i++) {
-            const d = new St.BoxLayout({vertical: true, style: 'margin-right: 10px;'});
-            const dn = new St.Label({text: days[i], style: 'font-size: 9px; color: #e8e8e8; font-weight: 700;'});
+        const days = ['Heute', 'Morgen', 'Sa', 'So', 'Mo'];
+        for (let i = 0; i < 5; i++) {
+            const d = new St.BoxLayout({vertical: false, style: 'margin-bottom: 6px;'});
+            const dn = new St.Label({text: days[i], style: 'font-size: 21px; color: #eee; width: 105px;'});
             d.add(dn);
-            const dic = new St.Label({text: '☁️', style: 'font-size: 18px; margin: 2px 0;'});
+            const dic = new St.Label({text: '☁️', style: 'font-size: 27px; width: 50px;'});
             d.add(dic);
-            const dmin = new St.Label({text: '4°', style: 'font-size: 9px; color: #fff; font-weight: bold;'});
+            const rain = new St.Label({text: '--%', style: 'font-size: 18px; color: #a9d8ff; width: 115px;'});
+            d.add(rain);
+            const dmin = new St.Label({text: '4°', style: 'font-size: 20px; color: #ddd; width: 55px;'});
             d.add(dmin);
-            const dmax = new St.Label({text: '9°', style: 'font-size: 9px; color: #e8e8e8;'});
-            d.add(dmax);
-            const dbar = new St.Label({text: '████░', style: 'font-size: 8px; color: #ff9800; margin-top: 3px; font-weight: bold;'});
+            const dbar = new St.Label({text: '━━━━━━', style: 'font-size: 16px; color: #ffd43b; width: 330px;'});
             d.add(dbar);
+            const dmax = new St.Label({text: '9°', style: 'font-size: 20px; color: #fff;'});
+            d.add(dmax);
             dailyBox.add(d);
-            this.dailyLabels.push({dn, dic, dmin, dmax, dbar});
+            this.dailyLabels.push({dn, dic, rain, dmin, dmax, dbar});
         }
         this.mainBox.add(dailyBox);
         
@@ -484,17 +482,19 @@ class TuxWetterDesklet extends Desklet.Desklet {
             this.humidLabel.set_text(c.relative_humidity_2m + '%');
             this.pressureLabel.set_text(Math.round(c.pressure_msl || 0) + ' hPa');
             this.feelsLabel.set_text('gefühlt ' + this._formatTemperature(c.apparent_temperature));
-            this.uvLabel.set_text('☀️ UV ' + Math.round(c.uv_index));
+            this.currentIcon.set_text(this._getIcon(c.weather_code));
+            this.uvLabel.set_text('🌙 UV: ' + Math.round(c.uv_index));
+            this.feelsLabel.set_text(
+                'gefühlt ' + this._formatTemperature(c.apparent_temperature) + '    ' +
+                (j.daily ? this._formatTemperature(j.daily.temperature_2m_max[0]) : '--') + ' / ' +
+                (j.daily ? this._formatTemperature(j.daily.temperature_2m_min[0]) : '--')
+            );
             
             if (j.daily) {
                 const sr = j.daily.sunrise[0].split('T')[1].substring(0, 5);
                 const ss = j.daily.sunset[0].split('T')[1].substring(0, 5);
                 this.sunriseLabel.set_text('🌅 Aufgang ' + sr);
                 this.sunsetLabel.set_text('🌇 Untergang ' + ss);
-                this.minmaxLabel.set_text(
-                    this._formatTemperature(j.daily.temperature_2m_min[0]) + '/' +
-                    this._formatTemperature(j.daily.temperature_2m_max[0])
-                );
             }
             
             if (j.hourly && j.hourly.temperature_2m && j.hourly.weather_code) {
@@ -511,12 +511,13 @@ class TuxWetterDesklet extends Desklet.Desklet {
             }
             
             if (j.daily && j.daily.weather_code) {
-                for (let i = 0; i < 7; i++) {
+                for (let i = 0; i < this.dailyLabels.length; i++) {
                     if (i < j.daily.weather_code.length) {
                         const pct = j.daily.precipitation_probability_max[i] || 0;
                         const filled = Math.round(pct / 20);
                         const bar = '█'.repeat(filled) + '░'.repeat(5 - filled);
                         this.dailyLabels[i].dic.set_text(this._getIcon(j.daily.weather_code[i]));
+                        this.dailyLabels[i].rain.set_text(Math.round(pct) + '%');
                         this.dailyLabels[i].dmin.set_text(this._formatTemperature(j.daily.temperature_2m_min[i]));
                         this.dailyLabels[i].dmax.set_text(this._formatTemperature(j.daily.temperature_2m_max[i]));
                         this.dailyLabels[i].dbar.set_text(bar);

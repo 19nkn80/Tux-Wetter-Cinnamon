@@ -1,9 +1,10 @@
 .tux-wetter-card {
     color: #ffffff;
-    width: 390px;
-    padding: 20px;
-    border-radius: 14px;
-    border: 1px solid rgba(220, 180, 255, 0.75);
+    width: 760px;
+    min-width: 760px;
+    padding: 28px 34px;
+    border-radius: 20px;
+    border: 1px solid rgba(220, 220, 255, 0.8);
     box-shadow: 0 8px 26px rgba(0, 0, 0, 0.35);
     background-gradient-direction: vertical;
 }
