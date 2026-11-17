@@ -79,7 +79,9 @@ class TuxWetterDesklet extends Desklet.Desklet {
         this.background.set_height(700);
         this.gradientStrips = [];
         for (let i = 0; i < 10; i++) {
-            const strip = new St.Widget({style: 'background-color: #3d55c9;'});
+            const strip = new Clutter.Actor({
+                background_color: new Clutter.Color({red: 61, green: 85, blue: 201, alpha: 255})
+            });
             strip.set_height(70);
             strip.set_x_expand(true);
             this.background.add_child(strip);
@@ -229,10 +231,9 @@ class TuxWetterDesklet extends Desklet.Desklet {
         });
         this.curveLabel.visible = false;
         this.mainBox.add(this.curveLabel);
-        this.curveArea = new St.DrawingArea();
+        this.curveArea = new St.BoxLayout({vertical: false});
         this.curveArea.set_height(100);
         this.curveArea.set_x_expand(true);
-        this.curveArea.connect('repaint', () => this._paintCurve());
         this.curveArea.visible = false;
         this.mainBox.add(this.curveArea);
         
@@ -337,30 +338,22 @@ class TuxWetterDesklet extends Desklet.Desklet {
     _paintCurve() {
         const values = this.curveValues || [];
         if (values.length < 2) return;
-        const [width, height] = this.curveArea.get_surface_size();
-        if (width <= 0 || height <= 0) return;
-        const cr = this.curveArea.get_context();
         const min = Math.min.apply(null, values);
         const max = Math.max.apply(null, values);
         const range = Math.max(1, max - min);
-        cr.setSourceRGBA(1, 1, 1, 0.25);
-        cr.setLineWidth(1);
-        for (let i = 1; i < 4; i++) {
-            const y = (height * i) / 4;
-            cr.moveTo(0, y);
-            cr.lineTo(width, y);
+        while (this.curveArea.get_n_children() > 0) {
+            this.curveArea.get_child_at_index(0).destroy();
         }
-        cr.stroke();
-        cr.setSourceRGBA(1, 0.85, 0.2, 1);
-        cr.setLineWidth(3);
-        values.forEach((value, index) => {
-            const x = (width * index) / (values.length - 1);
-            const y = height - ((value - min) / range) * (height - 10) - 5;
-            if (index === 0) cr.moveTo(x, y);
-            else cr.lineTo(x, y);
+        values.forEach((value) => {
+            const bar = new Clutter.Actor({
+                background_color: new Clutter.Color({red: 255, green: 216, blue: 32, alpha: 255}),
+                x_align: Clutter.ActorAlign.FILL,
+                y_align: Clutter.ActorAlign.END
+            });
+            bar.set_height(Math.max(8, Math.round(((value - min) / range) * 90) + 10));
+            bar.set_x_expand(true);
+            this.curveArea.add_child(bar);
         });
-        cr.stroke();
-        cr.$dispose();
     }
 
     _showDayCurve(dayIndex) {
@@ -372,7 +365,7 @@ class TuxWetterDesklet extends Desklet.Desklet {
         this.curveLabel.set_text('Temperaturverlauf – ' + this.dailyLabels[dayIndex].dn.text);
         this.curveLabel.visible = true;
         this.curveArea.visible = true;
-        this.curveArea.queue_repaint();
+        this._paintCurve();
     }
 
     _applyAppearance() {
@@ -400,8 +393,13 @@ class TuxWetterDesklet extends Desklet.Desklet {
                 Math.round((start[1] + (end[1] - start[1]) * factor) * 255),
                 Math.round((start[2] + (end[2] - start[2]) * factor) * 255)
             ];
-            const strip = new St.Widget({
-                style: 'background-color: rgb(' + color.join(',') + ');'
+            const strip = new Clutter.Actor({
+                background_color: new Clutter.Color({
+                    red: color[0],
+                    green: color[1],
+                    blue: color[2],
+                    alpha: 255
+                })
             });
             strip.set_height(70);
             strip.set_x_expand(true);
