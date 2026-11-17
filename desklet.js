@@ -7,7 +7,7 @@ const Settings = imports.ui.settings;
 
 const REPOSITORY = '19nkn80/Tux-Wetter-Cinnamon';
 const RAW_BASE_URL = 'https://raw.githubusercontent.com/' + REPOSITORY + '/main/';
-const LOCAL_VERSION = '1.5.0';
+const LOCAL_VERSION = '1.5.1';
 
 class TuxWetterDesklet extends Desklet.Desklet {
     constructor(metadata, desklet_id) {
@@ -30,6 +30,9 @@ class TuxWetterDesklet extends Desklet.Desklet {
         this.textColor = '#ffffff';
         this.bgColor = '#16161d';
         this.opacity = 92;
+        this._theme = St.ThemeContext.get_for_stage(global.stage).get_theme();
+        this._stylesheetPath = this.metadata.path + '/stylesheet.css';
+        this._theme.load_stylesheet(this._stylesheetPath);
         this.settings = new Settings.DeskletSettings(this, this.metadata.uuid, desklet_id);
         this.settings.bind('location', 'location', this._onSettingsChanged.bind(this));
         this.settings.bind('location-name', 'locationName', this._onSettingsChanged.bind(this));
@@ -51,7 +54,7 @@ class TuxWetterDesklet extends Desklet.Desklet {
         
         this.mainBox = new St.BoxLayout({
             vertical: true, 
-            style: 'background-color: rgba(22, 22, 29, 0.92); padding: 20px; border-radius: 12px; color: #fff; width: 390px; border: 1px solid rgba(150, 70, 180, 0.9);'
+            style_class: 'tux-wetter-card tux-wetter-theme-nacht'
         });
         
         const headerBox = new St.BoxLayout({vertical: false, style: 'margin-bottom: 16px;'});
@@ -216,12 +219,8 @@ class TuxWetterDesklet extends Desklet.Desklet {
 
     _applyAppearance() {
         const opacity = Math.max(0, Math.min(100, Number(this.opacity) || 92)) / 100;
-        const theme = this._getTheme();
-        this.mainBox.style = 'background-gradient-direction: vertical; background-gradient-start: ' +
-            theme[0] + '; background-gradient-end: ' + theme[1] + '; background-color: ' +
-            String(this.bgColor || theme[0]) + '; opacity: ' + opacity +
-            '; padding: 20px; border-radius: 12px; width: 390px; border: 1px solid rgba(210, 70, 220, 0.9);';
-        this.mainBox.style = this.mainBox.style + 'color: ' + String(this.textColor || '#ffffff') + ';';
+        this.mainBox.style_class = 'tux-wetter-card tux-wetter-theme-' + this.colorTheme;
+        this.mainBox.opacity = Math.round(opacity * 255);
     }
 
     on_location_search_pressed() {
@@ -320,7 +319,7 @@ class TuxWetterDesklet extends Desklet.Desklet {
 
     _installUpdate() {
         try {
-            const files = ['desklet.js', 'metadata.json', 'settings-schema.json'];
+            const files = ['desklet.js', 'metadata.json', 'settings-schema.json', 'stylesheet.css'];
             for (let i = 0; i < files.length; i++) {
                 const content = this._fetchText(RAW_BASE_URL + files[i]);
                 const path = GLib.build_filenamev([
@@ -537,6 +536,9 @@ class TuxWetterDesklet extends Desklet.Desklet {
         if (this._timeout) {
             GLib.source_remove(this._timeout);
             this._timeout = 0;
+        }
+        if (this._theme && this._stylesheetPath) {
+            this._theme.unload_stylesheet(this._stylesheetPath);
         }
     }
 

@@ -9,6 +9,8 @@ Ein Weather-Desklet für Cinnamon Desktop Environment 6.6.9+
 ✅ **Auto-Update** - Aktualisiert alle 30 Minuten automatisch
 ✅ **Einstellungen** - Standort, Einheiten, Sichtbarkeit und Intervall
 ✅ **GitHub-Updates** - Update-Prüfung und Installation über das Kontextmenü
+✅ **Glas-Karten-Design** - Lokales Cinnamon-Stylesheet mit sechs Farbverläufen
+✅ **Mehrere Orte** - Ortsliste mit Pfeilnavigation und Zahnrad für Einstellungen
 ✅ **Einfache Installation** - Plug & Play für Cinnamon
 
 ## Installation
@@ -39,7 +41,7 @@ und der Link zum Projekt zur Verfügung.
 - **API**: Open-Meteo (https://open-meteo.com)
 - **Implementation**: GJS (GNOME JavaScript)
 - **HTTP-Client**: curl + GLib.spawn_command_line_sync
-- **Styling**: Clutter/St (Cinnamon UI Framework)
+- **Styling**: Clutter/St mit lokalem Cinnamon-Stylesheet und Farbverläufen
 - **Updates**: https://github.com/19nkn80/Tux-Wetter-Cinnamon
 
 ## Fehlerbehebung
@@ -51,4 +53,4 @@ Falls Daten nicht laden:
 
 ## Version
 
-v1.5.0 - Ortsliste, Pfeilnavigation, Zahnrad und drei Wetterdienste
+v1.5.1 - Zuverlässige Stylesheet-Farbverläufe und Update des vollständigen Karten-Designs
