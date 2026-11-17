@@ -51,4 +51,4 @@ Falls Daten nicht laden:
 
 ## Version
 
-v1.1.0 - Einstellungen und GitHub-Updatefunktion
+v1.1.1 - Einstellungen und GitHub-Updatefunktion

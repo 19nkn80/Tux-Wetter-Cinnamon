@@ -311,8 +311,6 @@ class TuxWetterDesklet extends Desklet.Desklet {
 
     on_desklet_added_to_desktop() {
         this._onSettingsChanged();
-        this._fetchData();
-        this._restartUpdateTimer();
     }
 
     on_desklet_removed() {
