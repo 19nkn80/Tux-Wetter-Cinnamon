@@ -11,7 +11,7 @@ const RAW_BASE_URL = 'https://raw.githubusercontent.com/' + REPOSITORY + '/main/
 const LOCAL_VERSION = '1.16.0';
 const GRADIENT_STRIP_COUNT = 100;
 const CARD_WIDTH = 760;
-const CARD_HEIGHT = 760;
+const CARD_HEIGHT = 820;
 
 class TuxWetterDesklet extends Desklet.Desklet {
     constructor(metadata, desklet_id) {
@@ -96,13 +96,13 @@ class TuxWetterDesklet extends Desklet.Desklet {
         this.card.add_child(this.background);
         this.mainBox = new St.BoxLayout({
             vertical: true,
-            style: 'padding: 28px 34px;'
+            style: 'padding: 22px 28px;'
         });
         this.mainBox.set_x_expand(true);
         this.mainBox.set_y_expand(true);
         this.card.add_child(this.mainBox);
         
-        const headerBox = new St.BoxLayout({vertical: false, style: 'margin-bottom: 18px;'});
+        const headerBox = new St.BoxLayout({vertical: false, style: 'margin-bottom: 12px;'});
         const headerLeft = new St.BoxLayout({vertical: true});
         headerLeft.set_width(360);
         const locationBar = new St.BoxLayout({vertical: false, style: 'margin-bottom: 2px;'});
@@ -128,7 +128,7 @@ class TuxWetterDesklet extends Desklet.Desklet {
         
         headerBox.add(headerLeft);
         
-        const headerRight = new St.BoxLayout({vertical: true, style: 'margin-left: 20px; margin-top: 54px;'});
+        const headerRight = new St.BoxLayout({vertical: true, style: 'margin-left: 18px; margin-top: 48px;'});
         headerRight.set_width(350);
         
         this.descLabel = new St.Label({text: 'Laden...', style: 'font-size: 27px; color: #fff; margin-bottom: 15px;'});
@@ -155,11 +155,11 @@ class TuxWetterDesklet extends Desklet.Desklet {
         headerBox.add(headerRight);
         this.mainBox.add(headerBox);
         
-        const hourlyBox = new St.BoxLayout({vertical: false, style: 'margin-bottom: 18px;'});
+        const hourlyBox = new St.BoxLayout({vertical: false, style: 'margin-bottom: 12px;'});
         this.hourlyBox = hourlyBox;
         this.hourlyLabels = [];
         for (let i = 0; i < 6; i++) {
-            const h = new St.BoxLayout({vertical: true, style: 'margin-right: 31px;'});
+            const h = new St.BoxLayout({vertical: true, style: 'margin-right: 26px;'});
             const t = new St.Label({text: '18:00', style: 'font-size: 20px; color: #ddd;'});
             h.add(t);
             const ic = new St.Label({text: '🌙', style: 'font-size: 38px; margin: 7px 0;'});
@@ -171,8 +171,8 @@ class TuxWetterDesklet extends Desklet.Desklet {
         }
         this.mainBox.add(hourlyBox);
         
-        const infoBox = new St.BoxLayout({vertical: true, style: 'margin-bottom: 18px;'});
-        const infoRowOne = new St.BoxLayout({vertical: false, style: 'margin-bottom: 6px;'});
+        const infoBox = new St.BoxLayout({vertical: true, style: 'margin-bottom: 12px;'});
+        const infoRowOne = new St.BoxLayout({vertical: false, style: 'margin-bottom: 4px;'});
         this.sunriseLabel = new St.Label({text: 'Sonnenaufgang: 07:31', style: 'font-size: 18px; color: #fff; margin-right: 25px;'});
         infoRowOne.add(this.sunriseLabel);
         this.sunsetLabel = new St.Label({text: 'Sonnenuntergang: 16:10', style: 'font-size: 18px; color: #fff; margin-right: 25px;'});
@@ -192,23 +192,23 @@ class TuxWetterDesklet extends Desklet.Desklet {
 
         this.moonLabel = new St.Label({
             text: '🌙 Mond: --',
-            style: 'font-size: 17px; color: #fff; margin-bottom: 12px;'
+            style: 'font-size: 17px; color: #fff; margin-bottom: 8px;'
         });
         this.mainBox.add(this.moonLabel);
 
         this.warningLabel = new St.Label({
             text: '',
-            style: 'font-size: 18px; color: #fff; background-color: rgba(180, 45, 50, 0.75); padding: 6px 10px; margin-bottom: 10px;'
+            style: 'font-size: 18px; color: #fff; background-color: rgba(180, 45, 50, 0.75); padding: 5px 10px; margin-bottom: 7px;'
         });
         this.warningLabel.visible = false;
         this.mainBox.add(this.warningLabel);
         
-        const dailyBox = new St.BoxLayout({vertical: true, style: 'border-top: 1px solid rgba(255,255,255,0.3); padding-top: 10px;'});
+        const dailyBox = new St.BoxLayout({vertical: true, style: 'border-top: 1px solid rgba(255,255,255,0.3); padding-top: 8px;'});
         this.dailyBox = dailyBox;
         this.dailyLabels = [];
         const days = ['Heute', 'Morgen', 'Sa', 'So', 'Mo'];
         for (let i = 0; i < 5; i++) {
-            const d = new St.BoxLayout({vertical: false, style: 'margin-bottom: 6px;'});
+            const d = new St.BoxLayout({vertical: false, style: 'margin-bottom: 3px;'});
             d.reactive = true;
             d.connect('button-press-event', () => {
                 this._showDayCurve(i);
