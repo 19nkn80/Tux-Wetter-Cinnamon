@@ -375,7 +375,7 @@ class TuxWetterDesklet extends Desklet.Desklet {
         }
         this._locationFetchTimeout = GLib.timeout_add(GLib.PRIORITY_DEFAULT, 500, () => {
             this._locationFetchTimeout = 0;
-            this._fetchData();
+            this._fetchData(true);
             return false;
         });
     }
@@ -866,7 +866,7 @@ class TuxWetterDesklet extends Desklet.Desklet {
         };
     }
 
-    _fetchData() {
+    _fetchData(fast = false) {
         try {
             const coordinates = String(this.location || '52.52,13.405').split(',');
             if (coordinates.length !== 2) throw new Error('Ungültiger Standort');
@@ -892,14 +892,16 @@ class TuxWetterDesklet extends Desklet.Desklet {
             let c = j.current;
             this.providerLabel.set_text('Wetterdienst: ' + this._providerName());
             let air = null;
-            try {
-                air = JSON.parse(this._fetchText(
-                    'https://air-quality-api.open-meteo.com/v1/air-quality?latitude=' +
-                    latitude + '&longitude=' + longitude +
-                    '&current=european_aqi,pm2_5,pm10&hourly=alder_pollen,birch_pollen,grass_pollen,mugwort_pollen,olive_pollen,ragweed_pollen&timezone=auto&forecast_days=1'
-                ));
-            } catch (e) {
-                global.logError('TuX-Wetter Luftqualitätsdaten: ' + e);
+            if (!fast) {
+                try {
+                    air = JSON.parse(this._fetchText(
+                        'https://air-quality-api.open-meteo.com/v1/air-quality?latitude=' +
+                        latitude + '&longitude=' + longitude +
+                        '&current=european_aqi,pm2_5,pm10&hourly=alder_pollen,birch_pollen,grass_pollen,mugwort_pollen,olive_pollen,ragweed_pollen&timezone=auto&forecast_days=1'
+                    ));
+                } catch (e) {
+                    global.logError('TuX-Wetter Luftqualitätsdaten: ' + e);
+                }
             }
             this.tempLabel.set_text(this._formatTemperature(c.temperature_2m));
             this.descLabel.set_text(this._getDesc(c.weather_code));
@@ -928,7 +930,7 @@ class TuxWetterDesklet extends Desklet.Desklet {
                     'Pollenbelastung: ' + this._pollenText(Math.max.apply(null, pollenValues))
                 );
             }
-            if (this.showMoon) {
+            if (!fast && this.showMoon) {
                 try {
                     const moon = this._fetchMoon();
                     this.moonLabel.set_text(
@@ -946,7 +948,7 @@ class TuxWetterDesklet extends Desklet.Desklet {
             } else {
                 this.warningLabel.visible = false;
             }
-            if (this.showWarnings) {
+            if (!fast && this.showWarnings) {
                 try {
                     let warning = null;
                     try {
