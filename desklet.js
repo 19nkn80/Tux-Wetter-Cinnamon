@@ -104,13 +104,13 @@ class TuxWetterDesklet extends Desklet.Desklet {
         
         const headerBox = new St.BoxLayout({
             vertical: false,
-            style: 'margin-bottom: 12px; padding: 10px 12px; background-color: rgba(15,20,60,0.28); border-radius: 18px;'
+            style: 'margin-bottom: 12px; padding: 8px 4px; border-bottom: 1px solid rgba(255,255,255,0.24);'
         });
         const headerLeft = new St.BoxLayout({vertical: true});
         headerLeft.set_width(360);
         const locationBar = new St.BoxLayout({
             vertical: false,
-            style: 'margin-bottom: 2px; background-color: rgba(255,255,255,0.10); border-radius: 12px; padding: 1px 5px;'
+            style: 'margin-bottom: 2px; padding: 1px 2px;'
         });
         this.previousLocationButton = new St.Button({label: '‹', style: 'font-size: 48px; color: #ffffff; padding: 0 12px;'});
         this.previousLocationButton.connect('button-press-event', () => {
@@ -131,10 +131,7 @@ class TuxWetterDesklet extends Desklet.Desklet {
         locationBar.add(this.settingsButton);
         headerLeft.add(locationBar);
         
-        const temperatureBox = new St.BoxLayout({
-            vertical: false,
-            style: 'margin-top: 4px; padding: 2px 8px;'
-        });
+        const temperatureBox = new St.BoxLayout({vertical: false, style: 'margin-top: 4px;'});
         this.currentIcon = new St.Label({text: '☀️', style: 'font-size: 58px; margin: 4px 16px 0 0;'});
         temperatureBox.add(this.currentIcon);
         this.tempLabel = new St.Label({text: '--°', style: 'font-size: 78px; font-weight: 600; color: #fff;'});
@@ -145,7 +142,7 @@ class TuxWetterDesklet extends Desklet.Desklet {
         
         const headerRight = new St.BoxLayout({
             vertical: true,
-            style: 'margin-left: 18px; margin-top: 48px; background-color: rgba(255,255,255,0.06); border-radius: 14px; padding: 10px 14px;'
+            style: 'margin-left: 18px; margin-top: 48px; padding-left: 14px;'
         });
         headerRight.set_width(350);
         
@@ -177,10 +174,7 @@ class TuxWetterDesklet extends Desklet.Desklet {
         this.hourlyBox = hourlyBox;
         this.hourlyLabels = [];
         for (let i = 0; i < 6; i++) {
-            const h = new St.BoxLayout({
-                vertical: true,
-                style: 'margin-right: 10px; padding: 5px 10px; border-radius: 12px; background-color: rgba(255,255,255,0.08);'
-            });
+            const h = new St.BoxLayout({vertical: true, style: 'margin-right: 24px;'});
             const t = new St.Label({text: '18:00', style: 'font-size: 20px; color: #ddd;'});
             h.add(t);
             const ic = new St.Label({text: '🌙', style: 'font-size: 38px; margin: 7px 0;'});
@@ -194,7 +188,7 @@ class TuxWetterDesklet extends Desklet.Desklet {
         
         const infoBox = new St.BoxLayout({
             vertical: true,
-            style: 'margin-bottom: 10px; padding: 7px 10px; border-radius: 12px; background-color: rgba(15,20,60,0.22);'
+            style: 'margin-bottom: 10px; padding: 6px 0; border-top: 1px solid rgba(255,255,255,0.18); border-bottom: 1px solid rgba(255,255,255,0.18);'
         });
         const infoRowOne = new St.BoxLayout({vertical: false, style: 'margin-bottom: 4px;'});
         this.sunriseLabel = new St.Label({text: 'Sonnenaufgang: 07:31', style: 'font-size: 18px; color: #fff; margin-right: 25px;'});
@@ -237,7 +231,7 @@ class TuxWetterDesklet extends Desklet.Desklet {
         for (let i = 0; i < 5; i++) {
             const d = new St.BoxLayout({
                 vertical: false,
-                style: 'margin-bottom: 2px; padding: 2px 6px; border-radius: 8px; background-color: rgba(255,255,255,0.06);'
+                style: 'margin-bottom: 2px; padding: 2px 0;'
             });
             d.reactive = true;
             d.connect('button-press-event', () => {
