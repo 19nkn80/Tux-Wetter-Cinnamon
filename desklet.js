@@ -11,7 +11,7 @@ const RAW_BASE_URL = 'https://raw.githubusercontent.com/' + REPOSITORY + '/main/
 const LOCAL_VERSION = '1.16.0';
 const GRADIENT_STRIP_COUNT = 100;
 const CARD_WIDTH = 760;
-const CARD_HEIGHT = 750;
+const CARD_HEIGHT = 730;
 
 class TuxWetterDesklet extends Desklet.Desklet {
     constructor(metadata, desklet_id) {
@@ -220,7 +220,10 @@ class TuxWetterDesklet extends Desklet.Desklet {
         this.dailyLabels = [];
         const days = ['Heute', 'Morgen', 'Sa', 'So', 'Mo'];
         for (let i = 0; i < 5; i++) {
-            const d = new St.BoxLayout({vertical: false, style: 'margin-bottom: 3px;'});
+            const d = new St.BoxLayout({
+                vertical: false,
+                style: 'margin-bottom: 2px; padding: 2px 6px; border-radius: 8px; background-color: rgba(255,255,255,0.06);'
+            });
             d.reactive = true;
             d.connect('button-press-event', () => {
                 this._showDayCurve(i);
@@ -278,6 +281,7 @@ class TuxWetterDesklet extends Desklet.Desklet {
         this._timeout = 0;
         this._settingsTimeout = 0;
         this._settingsProcess = 0;
+        this._locationFetchTimeout = 0;
         this._locationIndex = -1;
     }
 
@@ -357,7 +361,14 @@ class TuxWetterDesklet extends Desklet.Desklet {
         this.locationLabel.set_text(selected.name);
         this.settings.setValue('location-name', selected.name);
         this.settings.setValue('location', selected.coordinates);
-        this._fetchData();
+        if (this._locationFetchTimeout) {
+            GLib.source_remove(this._locationFetchTimeout);
+        }
+        this._locationFetchTimeout = GLib.timeout_add(GLib.PRIORITY_DEFAULT, 50, () => {
+            this._locationFetchTimeout = 0;
+            this._fetchData();
+            return false;
+        });
     }
 
     _getTheme() {
@@ -1011,6 +1022,10 @@ class TuxWetterDesklet extends Desklet.Desklet {
         if (this._settingsTimeout) {
             GLib.source_remove(this._settingsTimeout);
             this._settingsTimeout = 0;
+        }
+        if (this._locationFetchTimeout) {
+            GLib.source_remove(this._locationFetchTimeout);
+            this._locationFetchTimeout = 0;
         }
     }
 
