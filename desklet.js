@@ -1,5 +1,6 @@
 const St = imports.gi.St;
 const Clutter = imports.gi.Clutter;
+const Gio = imports.gi.Gio;
 const Desklet = imports.ui.desklet;
 const GLib = imports.gi.GLib;
 const Main = imports.ui.main;
@@ -880,15 +881,31 @@ class TuxWetterDesklet extends Desklet.Desklet {
             } else {
                 cmd = `curl -s "https://api.open-meteo.com/v1/forecast?latitude=${latitude}&longitude=${longitude}&current=temperature_2m,relative_humidity_2m,apparent_temperature,weather_code,wind_speed_10m,wind_direction_10m,precipitation_probability,uv_index,pressure_msl&hourly=temperature_2m,weather_code,precipitation_probability&daily=weather_code,temperature_2m_max,temperature_2m_min,precipitation_probability_max,sunrise,sunset&timezone=auto&forecast_days=7"`;
             }
-            
-            let [ok, out] = GLib.spawn_command_line_sync(cmd);
-            if (!ok || !out) return;
-            
-            let j = JSON.parse(out.toString());
-            if (this.weatherProvider === 'wttr-in') j = this._normalizeWttr(j);
-            if (this.weatherProvider === 'met-no') j = this._normalizeMetNorway(j);
+            const process = Gio.Subprocess.new(
+                ['sh', '-c', cmd],
+                Gio.SubprocessFlags.STDOUT_PIPE | Gio.SubprocessFlags.STDERR_PIPE
+            );
+            process.communicate_utf8_async(null, null, (source, result) => {
+                try {
+                    let [, output] = source.communicate_utf8_finish(result);
+                    let j = JSON.parse(output);
+                    if (this.weatherProvider === 'wttr-in') j = this._normalizeWttr(j);
+                    if (this.weatherProvider === 'met-no') j = this._normalizeMetNorway(j);
+                    this._applyWeatherData(j, latitude, longitude, fast);
+                } catch (e) {
+                    global.logError('TuX-Wetter Datenabruf: ' + e);
+                    this.descLabel.set_text('Fehler');
+                }
+            });
+        } catch (e) {
+            global.logError('TuX-Wetter Datenabruf: ' + e);
+            this.descLabel.set_text('Fehler');
+        }
+    }
+
+    _applyWeatherData(j, latitude, longitude, fast) {
+        try {
             if (!j.current) return;
-            
             let c = j.current;
             this.providerLabel.set_text('Wetterdienst: ' + this._providerName());
             let air = null;
