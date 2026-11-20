@@ -373,7 +373,7 @@ class TuxWetterDesklet extends Desklet.Desklet {
         if (this._locationFetchTimeout) {
             GLib.source_remove(this._locationFetchTimeout);
         }
-        this._locationFetchTimeout = GLib.timeout_add(GLib.PRIORITY_DEFAULT, 50, () => {
+        this._locationFetchTimeout = GLib.timeout_add(GLib.PRIORITY_DEFAULT, 500, () => {
             this._locationFetchTimeout = 0;
             this._fetchData();
             return false;
@@ -754,7 +754,8 @@ class TuxWetterDesklet extends Desklet.Desklet {
             71: '❄️', 73: '❄️', 75: '❄️', 77: '❄️', 80: '🌧️', 81: '⛈️',
             82: '⛈️', 85: '❄️', 86: '❄️', 95: '⛈️', 96: '⛈️', 99: '⛈️'
         };
-        return icons[code] || '❓';
+        const numericCode = Number(code);
+        return icons[numericCode] || '☁️';
     }
 
     _getDesc(code) {
@@ -766,7 +767,7 @@ class TuxWetterDesklet extends Desklet.Desklet {
             82: 'Starker Schauer', 85: 'Schneeschauer', 86: 'Starker Schneeschauer',
             95: 'Gewitter', 96: 'Gewitter mit Hagel', 99: 'Gewitter mit Hagel'
         };
-        return descs[code] || 'Unbekannt';
+        return descs[Number(code)] || 'Bewölkt';
     }
 
     _codeFromText(text) {
