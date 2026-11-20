@@ -96,7 +96,7 @@ class TuxWetterDesklet extends Desklet.Desklet {
         this.card.add_child(this.background);
         this.mainBox = new St.BoxLayout({
             vertical: true,
-            style: 'padding: 22px 28px;'
+            style: 'padding: 20px 28px 8px;'
         });
         this.mainBox.set_x_expand(true);
         this.mainBox.set_y_expand(true);
@@ -105,16 +105,23 @@ class TuxWetterDesklet extends Desklet.Desklet {
         const headerBox = new St.BoxLayout({vertical: false, style: 'margin-bottom: 12px;'});
         const headerLeft = new St.BoxLayout({vertical: true});
         headerLeft.set_width(360);
-        const locationBar = new St.BoxLayout({vertical: false, style: 'margin-bottom: 2px;'});
+        const locationBar = new St.BoxLayout({
+            vertical: false,
+            style: 'margin-bottom: 2px; background-color: rgba(255,255,255,0.08); border-radius: 14px; padding: 2px 6px;'
+        });
         this.previousLocationButton = new St.Button({label: '‹', style: 'font-size: 48px; color: #ffffff; padding: 0 12px;'});
-        this.previousLocationButton.connect('clicked', () => this._cycleLocation(-1));
-        this.previousLocationButton.connect('button-press-event', () => Clutter.EVENT_STOP);
+        this.previousLocationButton.connect('button-press-event', () => {
+            this._cycleLocation(-1);
+            return Clutter.EVENT_STOP;
+        });
         locationBar.add(this.previousLocationButton);
         this.locationLabel = new St.Label({text: 'Lüchow', style: 'font-size: 38px; font-weight: 600; color: #fff;'});
         locationBar.add(this.locationLabel);
         this.nextLocationButton = new St.Button({label: '›', style: 'font-size: 48px; color: #ffffff; padding: 0 12px;'});
-        this.nextLocationButton.connect('clicked', () => this._cycleLocation(1));
-        this.nextLocationButton.connect('button-press-event', () => Clutter.EVENT_STOP);
+        this.nextLocationButton.connect('button-press-event', () => {
+            this._cycleLocation(1);
+            return Clutter.EVENT_STOP;
+        });
         locationBar.add(this.nextLocationButton);
         this.settingsButton = new St.Button({label: '⚙', style: 'font-size: 38px; color: #ffffff; padding: 0 12px;'});
         this.settingsButton.connect('clicked', () => this.configureDesklet());
@@ -130,7 +137,10 @@ class TuxWetterDesklet extends Desklet.Desklet {
         
         headerBox.add(headerLeft);
         
-        const headerRight = new St.BoxLayout({vertical: true, style: 'margin-left: 18px; margin-top: 48px;'});
+        const headerRight = new St.BoxLayout({
+            vertical: true,
+            style: 'margin-left: 18px; margin-top: 48px; background-color: rgba(255,255,255,0.06); border-radius: 14px; padding: 10px 14px;'
+        });
         headerRight.set_width(350);
         
         this.descLabel = new St.Label({text: 'Laden...', style: 'font-size: 27px; color: #fff; margin-bottom: 15px;'});
@@ -268,6 +278,7 @@ class TuxWetterDesklet extends Desklet.Desklet {
         this._timeout = 0;
         this._settingsTimeout = 0;
         this._settingsProcess = 0;
+        this._locationIndex = -1;
     }
 
     _onSettingsChanged() {
@@ -330,13 +341,17 @@ class TuxWetterDesklet extends Desklet.Desklet {
             this._notify(_('Bitte mindestens zwei Orte speichern.'));
             return;
         }
-        let current = entries.findIndex((entry) => entry.coordinates === String(this.location));
-        if (current < 0) {
-            current = entries.findIndex((entry) => entry.name === String(this.locationName));
+        let current = this._locationIndex;
+        if (current < 0 || current >= entries.length) {
+            current = entries.findIndex((entry) => entry.coordinates === String(this.location));
+            if (current < 0) {
+                current = entries.findIndex((entry) => entry.name === String(this.locationName));
+            }
         }
         if (current < 0) current = 0;
         const next = (current + step + entries.length) % entries.length;
         const selected = entries[next];
+        this._locationIndex = next;
         this.locationName = selected.name;
         this.location = selected.coordinates;
         this.locationLabel.set_text(selected.name);
