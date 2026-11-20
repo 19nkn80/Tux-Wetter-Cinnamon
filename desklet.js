@@ -11,7 +11,7 @@ const RAW_BASE_URL = 'https://raw.githubusercontent.com/' + REPOSITORY + '/main/
 const LOCAL_VERSION = '1.16.0';
 const GRADIENT_STRIP_COUNT = 100;
 const CARD_WIDTH = 760;
-const CARD_HEIGHT = 820;
+const CARD_HEIGHT = 780;
 
 class TuxWetterDesklet extends Desklet.Desklet {
     constructor(metadata, desklet_id) {
@@ -302,20 +302,41 @@ class TuxWetterDesklet extends Desklet.Desklet {
 
     _getSavedLocationEntries() {
         if (Array.isArray(this.savedLocations)) {
-            return this.savedLocations.map((entry) => entry.name + '|' + entry.coordinates);
+            return this.savedLocations
+                .filter((entry) => entry && entry.name && entry.coordinates)
+                .map((entry) => ({
+                    name: String(entry.name),
+                    coordinates: String(entry.coordinates)
+                }));
         }
-        return String(this.savedLocations || '').split(';').filter((entry) => entry.indexOf('|') > 0);
+        return String(this.savedLocations || '')
+            .split(';')
+            .filter((entry) => entry.indexOf('|') > 0)
+            .map((entry) => {
+                const separator = entry.indexOf('|');
+                return {
+                    name: entry.slice(0, separator),
+                    coordinates: entry.slice(separator + 1)
+                };
+            });
     }
 
     _cycleLocation(step) {
         const entries = this._getSavedLocationEntries();
         if (entries.length < 2) return;
-        let current = entries.findIndex((entry) => entry.split('|')[1] === this.location);
+        let current = entries.findIndex((entry) => entry.coordinates === String(this.location));
+        if (current < 0) {
+            current = entries.findIndex((entry) => entry.name === String(this.locationName));
+        }
         if (current < 0) current = 0;
         const next = (current + step + entries.length) % entries.length;
-        const parts = entries[next].split('|');
-        this.settings.setValue('location-name', parts[0]);
-        this.settings.setValue('location', parts.slice(1).join('|'));
+        const selected = entries[next];
+        this.locationName = selected.name;
+        this.location = selected.coordinates;
+        this.locationLabel.set_text(selected.name);
+        this.settings.setValue('location-name', selected.name);
+        this.settings.setValue('location', selected.coordinates);
+        this._fetchData();
     }
 
     _getTheme() {
