@@ -11,7 +11,7 @@ const RAW_BASE_URL = 'https://raw.githubusercontent.com/' + REPOSITORY + '/main/
 const LOCAL_VERSION = '1.16.0';
 const GRADIENT_STRIP_COUNT = 100;
 const CARD_WIDTH = 760;
-const CARD_HEIGHT = 780;
+const CARD_HEIGHT = 750;
 
 class TuxWetterDesklet extends Desklet.Desklet {
     constructor(metadata, desklet_id) {
@@ -108,11 +108,13 @@ class TuxWetterDesklet extends Desklet.Desklet {
         const locationBar = new St.BoxLayout({vertical: false, style: 'margin-bottom: 2px;'});
         this.previousLocationButton = new St.Button({label: '‹', style: 'font-size: 48px; color: #ffffff; padding: 0 12px;'});
         this.previousLocationButton.connect('clicked', () => this._cycleLocation(-1));
+        this.previousLocationButton.connect('button-press-event', () => Clutter.EVENT_STOP);
         locationBar.add(this.previousLocationButton);
         this.locationLabel = new St.Label({text: 'Lüchow', style: 'font-size: 38px; font-weight: 600; color: #fff;'});
         locationBar.add(this.locationLabel);
         this.nextLocationButton = new St.Button({label: '›', style: 'font-size: 48px; color: #ffffff; padding: 0 12px;'});
         this.nextLocationButton.connect('clicked', () => this._cycleLocation(1));
+        this.nextLocationButton.connect('button-press-event', () => Clutter.EVENT_STOP);
         locationBar.add(this.nextLocationButton);
         this.settingsButton = new St.Button({label: '⚙', style: 'font-size: 38px; color: #ffffff; padding: 0 12px;'});
         this.settingsButton.connect('clicked', () => this.configureDesklet());
@@ -301,15 +303,16 @@ class TuxWetterDesklet extends Desklet.Desklet {
     }
 
     _getSavedLocationEntries() {
-        if (Array.isArray(this.savedLocations)) {
-            return this.savedLocations
+        const savedLocations = this.settings.getValue('saved-locations');
+        if (Array.isArray(savedLocations)) {
+            return savedLocations
                 .filter((entry) => entry && entry.name && entry.coordinates)
                 .map((entry) => ({
                     name: String(entry.name),
                     coordinates: String(entry.coordinates)
                 }));
         }
-        return String(this.savedLocations || '')
+        return String(savedLocations || '')
             .split(';')
             .filter((entry) => entry.indexOf('|') > 0)
             .map((entry) => {
@@ -323,7 +326,10 @@ class TuxWetterDesklet extends Desklet.Desklet {
 
     _cycleLocation(step) {
         const entries = this._getSavedLocationEntries();
-        if (entries.length < 2) return;
+        if (entries.length < 2) {
+            this._notify(_('Bitte mindestens zwei Orte speichern.'));
+            return;
+        }
         let current = entries.findIndex((entry) => entry.coordinates === String(this.location));
         if (current < 0) {
             current = entries.findIndex((entry) => entry.name === String(this.locationName));
@@ -481,18 +487,11 @@ class TuxWetterDesklet extends Desklet.Desklet {
             return;
         }
         try {
-            const [ok, pid] = GLib.spawn_async(
-                null,
-                ['xlet-settings', 'desklet', this._uuid, '-i', String(this.instance_id), '-t', String(tab)],
-                null,
-                GLib.SpawnFlags.SEARCH_PATH | GLib.SpawnFlags.DO_NOT_REAP_CHILD,
-                null
-            );
-            if (!ok) throw new Error('xlet-settings konnte nicht gestartet werden');
-            this._settingsProcess = pid;
-            GLib.child_watch_add(GLib.PRIORITY_DEFAULT, pid, (childPid) => {
-                GLib.spawn_close_pid(childPid);
+            super.configureDesklet(tab);
+            this._settingsProcess = 1;
+            GLib.timeout_add(GLib.PRIORITY_DEFAULT, 1000, () => {
                 this._settingsProcess = 0;
+                return false;
             });
         } catch (e) {
             global.logError('TuX-Wetter Einstellungen: ' + e);
