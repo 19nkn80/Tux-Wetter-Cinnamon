@@ -110,7 +110,7 @@ class TuxWetterDesklet extends Desklet.Desklet {
             style: 'margin-bottom: 12px; padding: 8px 4px; border-bottom: 1px solid rgba(255,255,255,0.24);'
         });
         const headerLeft = new St.BoxLayout({vertical: true});
-        headerLeft.set_width(360);
+        headerLeft.set_width(320);
         const locationBar = new St.BoxLayout({
             vertical: false,
             style: 'margin-bottom: 2px; padding: 1px 2px;'
@@ -150,9 +150,9 @@ class TuxWetterDesklet extends Desklet.Desklet {
         
         const headerRight = new St.BoxLayout({
             vertical: true,
-            style: 'margin-left: 18px; margin-top: 48px; padding-left: 14px;'
+            style: 'margin-left: 10px; margin-top: 48px; padding-left: 10px;'
         });
-        headerRight.set_width(350);
+        headerRight.set_width(300);
         
         this.descLabel = new St.Label({text: 'Laden...', style: 'font-size: 27px; color: #fff; margin-bottom: 15px;'});
         headerRight.add(this.descLabel);
@@ -554,9 +554,10 @@ class TuxWetterDesklet extends Desklet.Desklet {
         if (!this.mainBox) return;
         this.mainBox.set_height(-1);
         const preferredHeight = this.mainBox.get_preferred_height(-1)[1];
-        this._cardHeight = Math.max(CARD_HEIGHT, Math.ceil(preferredHeight) + 32);
+        this._cardHeight = Math.max(CARD_HEIGHT, Math.ceil(preferredHeight) + 64, 820);
         this.card.set_height(this._cardHeight);
         this.background.set_height(this._cardHeight);
+        this.mainBox.set_height(this._cardHeight);
         const scale = Math.max(0.5, Math.min(1, Number(this.scalePercent) / 100 || 0.72));
         this.content.set_width(CARD_WIDTH * scale);
         this.content.set_height(this._cardHeight * scale);
