@@ -254,14 +254,14 @@ class TuxWetterDesklet extends Desklet.Desklet {
             const dmin = new St.Label({text: '4°', style: 'font-size: 20px; color: #ddd; width: 55px;'});
             d.add(dmin);
             const dbar = new St.Widget({
-                style: 'background-color: rgba(255,255,255,0.18); border-radius: 4px; margin: 8px 18px 0 0;'
+                style: 'background-color: rgba(255,255,255,0.18); border-radius: 5px; margin: 2px 18px 0 0;'
             });
             dbar.set_width(140);
-            dbar.set_height(6);
+            dbar.set_height(18);
             const dbarFill = new St.Widget({
                 style: 'background-color: #ffd43b; border-radius: 4px;'
             });
-            dbarFill.set_height(6);
+            dbarFill.set_height(18);
             dbar.add_child(dbarFill);
             d.add(dbar);
             const dmax = new St.Label({text: '9°', style: 'font-size: 20px; color: #fff;'});
