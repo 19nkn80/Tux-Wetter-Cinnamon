@@ -197,20 +197,29 @@ class TuxWetterDesklet extends Desklet.Desklet {
             vertical: true,
             style: 'margin-bottom: 10px; padding: 6px 0; border-top: 1px solid rgba(255,255,255,0.18); border-bottom: 1px solid rgba(255,255,255,0.18);'
         });
+        infoBox.set_x_expand(true);
         const infoRowOne = new St.BoxLayout({vertical: false, style: 'margin-bottom: 4px;'});
-        this.sunriseLabel = new St.Label({text: 'Sonnenaufgang: 07:31', style: 'font-size: 18px; color: #fff; margin-right: 25px;'});
+        infoRowOne.set_x_expand(true);
+        this.sunriseLabel = new St.Label({text: 'Sonnenaufgang: 07:31', style: 'font-size: 18px; color: #fff; margin-right: 40px;'});
+        this.sunriseLabel.set_x_expand(true);
         infoRowOne.add(this.sunriseLabel);
-        this.sunsetLabel = new St.Label({text: 'Sonnenuntergang: 16:10', style: 'font-size: 18px; color: #fff; margin-right: 25px;'});
+        this.sunsetLabel = new St.Label({text: 'Sonnenuntergang: 16:10', style: 'font-size: 18px; color: #fff; margin-right: 40px;'});
+        this.sunsetLabel.set_x_expand(true);
         infoRowOne.add(this.sunsetLabel);
         this.uvLabel = new St.Label({text: '☀ UV-Index: 0', style: 'font-size: 18px; color: #fff;'});
+        this.uvLabel.set_x_expand(true);
         infoRowOne.add(this.uvLabel);
         infoBox.add(infoRowOne);
         const infoRowTwo = new St.BoxLayout({vertical: false});
-        this.airLabel = new St.Label({text: 'Luftqualität: gut', style: 'font-size: 18px; color: #fff; margin-right: 25px;'});
+        infoRowTwo.set_x_expand(true);
+        this.airLabel = new St.Label({text: 'Luftqualität: gut', style: 'font-size: 18px; color: #fff; margin-right: 40px;'});
+        this.airLabel.set_x_expand(true);
         infoRowTwo.add(this.airLabel);
-        this.pollenLabel = new St.Label({text: 'Pollenbelastung: --', style: 'font-size: 18px; color: #fff; margin-right: 25px;'});
+        this.pollenLabel = new St.Label({text: 'Pollenbelastung: --', style: 'font-size: 18px; color: #fff; margin-right: 40px;'});
+        this.pollenLabel.set_x_expand(true);
         infoRowTwo.add(this.pollenLabel);
         this.rainNowLabel = new St.Label({text: 'Regenwahrscheinlichkeit: --', style: 'font-size: 18px; color: #fff;'});
+        this.rainNowLabel.set_x_expand(true);
         infoRowTwo.add(this.rainNowLabel);
         infoBox.add(infoRowTwo);
         this.mainBox.add(infoBox);
