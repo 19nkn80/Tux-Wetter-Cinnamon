@@ -283,7 +283,7 @@ class TuxWetterDesklet extends Desklet.Desklet {
         const statusLeft = new St.BoxLayout({vertical: true});
         this.versionLabel = new St.Label({
             text: 'TuX-Wetter',
-            style: 'font-size: 14px; color: rgba(255,255,255,0.78);'
+            style: 'font-size: 18px; color: rgba(255,255,255,0.78);'
         });
         statusLeft.add(this.versionLabel);
         this.forkLabel = new St.Label({
@@ -297,12 +297,13 @@ class TuxWetterDesklet extends Desklet.Desklet {
         statusBox.add(statusSpacer);
         this.lastUpdatedLabel = new St.Label({
             text: 'Zuletzt aktualisiert: --:--',
-            style: 'font-size: 14px; color: rgba(255,255,255,0.78);'
+            style: 'font-size: 18px; color: rgba(255,255,255,0.78);'
         });
         statusBox.add(this.lastUpdatedLabel);
         this.mainBox.add(statusBox);
         
         this.setContent(this.card);
+        this._draggable.inhibit = true;
         this.card.reactive = true;
         this.card.connect('scroll-event', (_actor, event) => {
             const direction = event.get_scroll_direction();
@@ -530,12 +531,15 @@ class TuxWetterDesklet extends Desklet.Desklet {
         const scale = Math.max(0.5, Math.min(1, Number(this.scalePercent) / 100 || 0.72));
         const theme = this._getTheme();
         this.card.set_scale(scale, scale);
-        this.content.set_width(CARD_WIDTH);
-        this.content.set_height(this._cardHeight || CARD_HEIGHT);
+        this.card.set_pivot_point(0, 0);
+        this.content.set_pivot_point(0, 0);
+        this.content.set_width(CARD_WIDTH * scale);
+        this.content.set_height((this._cardHeight || CARD_HEIGHT) * scale);
         this.card.opacity = 255;
         this.background.opacity = Math.round(this._backgroundAlpha * 255);
         this.card.set_style('background-color: transparent;');
         this._updateGradient(theme);
+        this._keepOnScreen();
     }
 
     _fitCardToContent() {
@@ -545,12 +549,31 @@ class TuxWetterDesklet extends Desklet.Desklet {
         this.card.set_height(this._cardHeight);
         this.background.set_height(this._cardHeight);
         this.mainBox.set_height(this._cardHeight);
-        this.content.set_height(this._cardHeight);
+        const scale = Math.max(0.5, Math.min(1, Number(this.scalePercent) / 100 || 0.72));
+        this.content.set_width(CARD_WIDTH * scale);
+        this.content.set_height(this._cardHeight * scale);
         this.card.queue_relayout();
         this.content.queue_relayout();
         this.gradientStrips.forEach((strip) => {
             strip.set_height(this._cardHeight / GRADIENT_STRIP_COUNT);
         });
+        this._keepOnScreen();
+    }
+
+    _keepOnScreen() {
+        if (!this.actor || !Main.layoutManager || !this.actor.get_stage()) return;
+        const monitor = this.actor.get_monitor();
+        const workArea = Main.layoutManager.getWorkAreaForMonitor(monitor);
+        const [x, y] = this.actor.get_position();
+        const width = this.content.width || 0;
+        const height = this.content.height || 0;
+        if (width <= 0 || height <= 0) return;
+        const maxX = Math.max(workArea.x, workArea.x + workArea.width - width);
+        const maxY = Math.max(workArea.y, workArea.y + workArea.height - height);
+        this.actor.set_position(
+            Math.max(workArea.x, Math.min(x, maxX)),
+            Math.max(workArea.y, Math.min(y, maxY))
+        );
     }
 
     _updateGradient(theme) {
@@ -632,15 +655,34 @@ class TuxWetterDesklet extends Desklet.Desklet {
             return;
         }
         try {
-            super.configureDesklet(tab);
-            this._settingsProcess = 1;
-            GLib.timeout_add(GLib.PRIORITY_DEFAULT, 1000, () => {
+            const argv = [
+                'xlet-settings',
+                'desklet',
+                this._uuid,
+                '-i',
+                String(this.instance_id),
+                '-t',
+                String(tab)
+            ];
+            const [, pid] = GLib.spawn_async(
+                null,
+                argv,
+                null,
+                GLib.SpawnFlags.SEARCH_PATH,
+                null
+            );
+            this._settingsProcess = pid;
+            this._draggable.inhibit = false;
+            GLib.child_watch_add(GLib.PRIORITY_DEFAULT, pid, () => {
+                this._draggable.inhibit = true;
                 this._settingsProcess = 0;
-                return false;
+                GLib.spawn_close_pid(pid);
+                return GLib.SOURCE_REMOVE;
             });
         } catch (e) {
             global.logError('TuX-Wetter Einstellungen: ' + e);
             this._settingsProcess = 0;
+            this._draggable.inhibit = true;
         }
     }
 
