@@ -255,16 +255,16 @@ class TuxWetterDesklet extends Desklet.Desklet {
             d.add(dmin);
             const dbar = new St.Widget({
                 layout_manager: new Clutter.BinLayout(),
-                style: 'background-color: rgba(255,255,255,0.18); border-radius: 5px; margin: 2px 18px 0 0;'
+                style: 'background-color: rgba(255,255,255,0.18); min-height: 18px; max-height: 18px; padding: 0; margin: 2px 18px 0 0;'
             });
             dbar.set_width(140);
             dbar.set_height(18);
             const dbarFill = new St.Widget({
                 x_align: Clutter.ActorAlign.START,
                 y_align: Clutter.ActorAlign.FILL,
-                style: 'background-color: #ffd43b; border-radius: 4px;'
+                style: 'background-color: #ffd43b; min-height: 18px; max-height: 18px; padding: 0; margin: 0;'
             });
-            dbarFill.set_height(18);
+            dbarFill.set_size(140, 18);
             dbarFill.set_y(0);
             dbar.add_child(dbarFill);
             d.add(dbar);
@@ -1196,6 +1196,7 @@ class TuxWetterDesklet extends Desklet.Desklet {
                         this.dailyLabels[i].dbarFill.set_width(
                             pct > 0 ? Math.max(5, Math.round(140 * pct / 100)) : 0
                         );
+                        this.dailyLabels[i].dbarFill.set_height(18);
                         this.dailyLabels[i].dbarFill.set_x(0);
                     }
                 }
