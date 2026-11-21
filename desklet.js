@@ -571,7 +571,7 @@ class TuxWetterDesklet extends Desklet.Desklet {
     _keepOnScreen() {
         if (!this.actor || !Main.layoutManager || !this.actor.get_stage()) return;
         const monitor = Main.layoutManager.findMonitorForActor(this.actor);
-        const workArea = Main.layoutManager.getWorkAreaForMonitor(monitor);
+        const workArea = global.display.get_monitor_geometry(monitor);
         const [x, y] = this.actor.get_position();
         const width = this.content.width || 0;
         const height = this.content.height || 0;
