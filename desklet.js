@@ -271,6 +271,9 @@ class TuxWetterDesklet extends Desklet.Desklet {
             dbarFill.set_size(140, 18);
             dbar.add_child(dbarFill);
             d.add(dbar);
+            const dbarSpacer = new St.Widget();
+            dbarSpacer.set_width(24);
+            d.add(dbarSpacer);
             const dmax = new St.Label({text: '9°', style: 'font-size: 20px; color: #fff;'});
             d.add(dmax);
             dailyBox.add(d);
