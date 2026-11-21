@@ -259,10 +259,12 @@ class TuxWetterDesklet extends Desklet.Desklet {
             });
             dbar.set_width(140);
             dbar.set_height(18);
-            const dbarFill = new St.Widget({
+            const dbarFill = new Clutter.Actor({
+                background_color: new Clutter.Color({
+                    red: 255, green: 215, blue: 55, alpha: 255
+                }),
                 x_align: Clutter.ActorAlign.START,
                 y_align: Clutter.ActorAlign.FILL,
-                style: 'background-color: #ffd43b; min-height: 18px; max-height: 18px; padding: 0; margin: 0;'
             });
             dbarFill.set_size(140, 18);
             dbarFill.set_y(0);
