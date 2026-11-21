@@ -134,7 +134,10 @@ class TuxWetterDesklet extends Desklet.Desklet {
         this.settingsButton.connect('clicked', () => this.configureDesklet());
         locationBar.add(this.settingsButton);
         this.refreshButton = new St.Button({label: '↻', style: 'font-size: 34px; color: #ffffff; padding: 0 10px;'});
-        this.refreshButton.connect('clicked', () => this.on_refresh_pressed());
+        this.refreshButton.connect('button-press-event', () => {
+            this.on_refresh_pressed();
+            return Clutter.EVENT_STOP;
+        });
         locationBar.add(this.refreshButton);
         headerLeft.add(locationBar);
         
@@ -144,6 +147,21 @@ class TuxWetterDesklet extends Desklet.Desklet {
         this.tempLabel = new St.Label({text: '--°', style: 'font-size: 78px; font-weight: 600; color: #fff;'});
         temperatureBox.add(this.tempLabel);
         headerLeft.add(temperatureBox);
+        this.versionLabel = new St.Label({
+            text: 'Installierte Version: ' + LOCAL_VERSION,
+            style: 'font-size: 14px; color: rgba(255,255,255,0.78); margin-top: 5px;'
+        });
+        headerLeft.add(this.versionLabel);
+        this.forkLabel = new St.Label({
+            text: 'Fork von Tux-Wetter-KDE von Mastertac',
+            style: 'font-size: 12px; color: rgba(255,255,255,0.65); margin-top: 2px;'
+        });
+        headerLeft.add(this.forkLabel);
+        this.lastUpdatedLabel = new St.Label({
+            text: 'Zuletzt aktualisiert: --:--',
+            style: 'font-size: 14px; color: rgba(255,255,255,0.78); margin-top: 3px;'
+        });
+        headerLeft.add(this.lastUpdatedLabel);
         
         headerBox.add(headerLeft);
         
@@ -160,17 +178,6 @@ class TuxWetterDesklet extends Desklet.Desklet {
             style: 'font-size: 19px; color: rgba(255,255,255,0.85); margin-bottom: 8px;'
         });
         headerRight.add(this.providerLabel);
-        this.versionLabel = new St.Label({
-            text: 'TuX-Wetter ' + LOCAL_VERSION + ' · Fork von Tux-Wetter-KDE von Mastertac',
-            style: 'font-size: 13px; color: rgba(255,255,255,0.70); margin-bottom: 8px;'
-        });
-        headerRight.add(this.versionLabel);
-        this.lastUpdatedLabel = new St.Label({
-            text: 'Zuletzt aktualisiert: --:--',
-            style: 'font-size: 13px; color: rgba(255,255,255,0.70); margin-bottom: 8px;'
-        });
-        headerRight.add(this.lastUpdatedLabel);
-        
         const metricsBox = new St.BoxLayout({vertical: false});
         this.windLabel = new St.Label({text: '💨 -- km/h', style: 'font-size: 19px; color: #fff; margin-right: 28px;'});
         metricsBox.add(this.windLabel);
@@ -523,10 +530,13 @@ class TuxWetterDesklet extends Desklet.Desklet {
     _fitCardToContent() {
         if (!this.mainBox) return;
         const preferredHeight = this.mainBox.get_preferred_height(-1)[1];
-        this._cardHeight = Math.max(CARD_HEIGHT, Math.ceil(preferredHeight) + 24);
+        this._cardHeight = Math.max(CARD_HEIGHT, Math.ceil(preferredHeight) + 32);
         this.card.set_height(this._cardHeight);
         this.background.set_height(this._cardHeight);
+        this.mainBox.set_height(this._cardHeight);
         this.content.set_height(this._cardHeight);
+        this.card.queue_relayout();
+        this.content.queue_relayout();
         this.gradientStrips.forEach((strip) => {
             strip.set_height(this._cardHeight / GRADIENT_STRIP_COUNT);
         });
