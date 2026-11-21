@@ -100,7 +100,7 @@ class TuxWetterDesklet extends Desklet.Desklet {
         this.card.add_child(this.background);
         this.mainBox = new St.BoxLayout({
             vertical: true,
-            style: 'padding: 20px 28px 8px;'
+            style: 'padding: 20px 28px 8px; spacing: 8px;'
         });
         this.mainBox.set_x_expand(true);
         this.card.add_child(this.mainBox);
@@ -382,6 +382,7 @@ class TuxWetterDesklet extends Desklet.Desklet {
         this._applyAppearance();
         GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => {
             this._fitCardToContent();
+            this._syncForecastBarHeights();
             return false;
         });
         if (this._settingsTimeout) GLib.source_remove(this._settingsTimeout);
@@ -586,6 +587,14 @@ class TuxWetterDesklet extends Desklet.Desklet {
             strip.set_height(this._cardHeight / GRADIENT_STRIP_COUNT);
         });
         this._keepOnScreen();
+    }
+
+    _syncForecastBarHeights() {
+        this.dailyLabels.forEach(({dbar, dbarFill}) => {
+            const height = dbar.height || 18;
+            dbarFill.set_height(height);
+            dbarFill.set_y(0);
+        });
     }
 
     _keepOnScreen() {
@@ -1224,6 +1233,7 @@ class TuxWetterDesklet extends Desklet.Desklet {
             );
             GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => {
                 this._fitCardToContent();
+                this._syncForecastBarHeights();
                 return false;
             });
         } catch (e) {
