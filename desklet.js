@@ -152,13 +152,13 @@ class TuxWetterDesklet extends Desklet.Desklet {
             vertical: true,
             style: 'margin-left: 10px; margin-top: 48px; padding-left: 10px;'
         });
-        headerRight.set_width(300);
+        headerRight.set_width(320);
         
-        this.descLabel = new St.Label({text: 'Laden...', style: 'font-size: 27px; color: #fff; margin-bottom: 15px;'});
+        this.descLabel = new St.Label({text: 'Laden...', style: 'font-size: 24px; color: #fff; margin-bottom: 8px;'});
         headerRight.add(this.descLabel);
         this.providerLabel = new St.Label({
             text: 'Wetterdienst: Open-Meteo',
-            style: 'font-size: 19px; color: rgba(255,255,255,0.85); margin-bottom: 8px;'
+            style: 'font-size: 16px; color: rgba(255,255,255,0.85); margin-bottom: 6px;'
         });
         headerRight.add(this.providerLabel);
         const metricsBox = new St.BoxLayout({vertical: true, style: 'margin-top: 2px;'});
@@ -176,24 +176,32 @@ class TuxWetterDesklet extends Desklet.Desklet {
         metricsBox.add(metricsRowTwo);
         headerRight.add(metricsBox);
         
-        this.feelsLabel = new St.Label({text: 'Gefühlt: --°C', style: 'font-size: 17px; color: #e8e8e8; margin-top: 10px;'});
+        this.feelsLabel = new St.Label({text: 'Gefühlt: --°C', style: 'font-size: 16px; color: #e8e8e8; margin-top: 8px;'});
         headerRight.add(this.feelsLabel);
-        this.todayRangeLabel = new St.Label({text: 'Heute: --° / --°', style: 'font-size: 17px; color: #e8e8e8; margin-top: 3px;'});
+        this.todayRangeLabel = new St.Label({text: 'Heute: --° / --°', style: 'font-size: 16px; color: #e8e8e8; margin-top: 2px;'});
         headerRight.add(this.todayRangeLabel);
         
         headerBox.add(headerRight);
         this.mainBox.add(headerBox);
         
         const hourlyBox = new St.BoxLayout({vertical: false, style: 'margin-bottom: 12px;'});
+        hourlyBox.set_x_expand(true);
         this.hourlyBox = hourlyBox;
         this.hourlyLabels = [];
         for (let i = 0; i < 6; i++) {
-            const h = new St.BoxLayout({vertical: true, style: 'margin-right: 24px;'});
+            const h = new St.BoxLayout({vertical: true});
+            h.set_x_expand(true);
             const t = new St.Label({text: '18:00', style: 'font-size: 20px; color: #ddd;'});
+            t.set_x_expand(true);
+            t.set_x_align(Clutter.ActorAlign.CENTER);
             h.add(t);
             const ic = new St.Label({text: '🌙', style: 'font-size: 38px; margin: 7px 0;'});
+            ic.set_x_expand(true);
+            ic.set_x_align(Clutter.ActorAlign.CENTER);
             h.add(ic);
             const te = new St.Label({text: '4°', style: 'font-size: 25px; color: #fff;'});
+            te.set_x_expand(true);
+            te.set_x_align(Clutter.ActorAlign.CENTER);
             h.add(te);
             hourlyBox.add(h);
             this.hourlyLabels.push({t, ic, te});
