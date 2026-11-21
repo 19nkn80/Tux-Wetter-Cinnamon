@@ -254,14 +254,18 @@ class TuxWetterDesklet extends Desklet.Desklet {
             const dmin = new St.Label({text: '4°', style: 'font-size: 20px; color: #ddd; width: 55px;'});
             d.add(dmin);
             const dbar = new St.Widget({
+                layout_manager: new Clutter.BinLayout(),
                 style: 'background-color: rgba(255,255,255,0.18); border-radius: 5px; margin: 2px 18px 0 0;'
             });
             dbar.set_width(140);
             dbar.set_height(18);
             const dbarFill = new St.Widget({
+                x_align: Clutter.ActorAlign.START,
+                y_align: Clutter.ActorAlign.FILL,
                 style: 'background-color: #ffd43b; border-radius: 4px;'
             });
             dbarFill.set_height(18);
+            dbarFill.set_y(0);
             dbar.add_child(dbarFill);
             d.add(dbar);
             const dmax = new St.Label({text: '9°', style: 'font-size: 20px; color: #fff;'});
