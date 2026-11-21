@@ -266,7 +266,7 @@ class TuxWetterDesklet extends Desklet.Desklet {
                     red: 255, green: 215, blue: 55, alpha: 255
                 }),
                 x_align: Clutter.ActorAlign.START,
-                y_align: Clutter.ActorAlign.FILL,
+                y_align: Clutter.ActorAlign.START,
             });
             dbarFill.set_size(140, 18);
             dbar.add_child(dbarFill);
@@ -1199,7 +1199,9 @@ class TuxWetterDesklet extends Desklet.Desklet {
                         this.dailyLabels[i].rain.set_text(Math.round(pct) + '%');
                         this.dailyLabels[i].dmin.set_text(this._formatTemperature(j.daily.temperature_2m_min[i]));
                         this.dailyLabels[i].dmax.set_text(this._formatTemperature(j.daily.temperature_2m_max[i]));
-                        this.dailyLabels[i].dbarFill.set_width(140);
+                        this.dailyLabels[i].dbarFill.set_width(
+                            pct > 0 ? Math.max(5, Math.round(140 * pct / 100)) : 0
+                        );
                         this.dailyLabels[i].dbarFill.set_height(18);
                         this.dailyLabels[i].dbarFill.set_x(0);
                     }
