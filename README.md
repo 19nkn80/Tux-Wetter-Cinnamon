@@ -35,7 +35,7 @@ sudo apt install curl
 
 ## Installation über die Cinnamon-Oberfläche
 
-1. Lade `Tux-Wetter-Cinnamon-0.2.zip` herunter.
+1. Lade `Tux-Wetter-Cinnamon-0.1.zip` herunter.
 2. Öffne **Systemeinstellungen → Desklets**.
 3. Öffne das Menü **Hinzufügen** beziehungsweise **Aus Datei installieren**.
 4. Wähle die ZIP-Datei aus.
@@ -52,7 +52,7 @@ Wenn deine Cinnamon-Version keinen Dateiimport anbietet:
 
 ```bash
 mkdir -p ~/.local/share/cinnamon/desklets
-unzip Tux-Wetter-Cinnamon-0.2.zip -d ~/.local/share/cinnamon/desklets
+unzip Tux-Wetter-Cinnamon-0.1.zip -d ~/.local/share/cinnamon/desklets
 ```
 
 Danach **Systemeinstellungen → Desklets** öffnen, TuX-Wetter aktivieren und

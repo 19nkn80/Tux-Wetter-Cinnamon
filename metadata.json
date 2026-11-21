@@ -2,7 +2,7 @@
  "uuid": "tux-wetter@cinnamon-desklet",
  "name": "TuX-Wetter",
  "description": "Wetter-Desklet mit mehreren kostenlosen Wetterdiensten",
- "version": "0.2",
+ "version": "0.1",
  "website": "https://github.com/19nkn80/Tux-Wetter-Cinnamon",
  "icon": "weather-clear",
  "prevent-decorations": true,
