@@ -69,6 +69,7 @@ class TuxWetterDesklet extends Desklet.Desklet {
         this.settings.bind('opacity', 'opacity', this._onSettingsChanged.bind(this));
         this.settings.bind('desklet-scale', 'scalePercent', this._onSettingsChanged.bind(this));
         this._normalizeColorThemeSetting();
+        this._normalizeWeatherProviderSetting();
         
         this.card = new St.Widget({
             layout_manager: new Clutter.BinLayout(),
@@ -293,10 +294,12 @@ class TuxWetterDesklet extends Desklet.Desklet {
         this._settingsProcess = 0;
         this._locationFetchTimeout = 0;
         this._locationIndex = -1;
+        this._captureAppliedSettings();
     }
 
     _onSettingsChanged() {
         if (!this.locationLabel) return;
+        this.weatherProvider = this._normalizeWeatherProviderSetting();
         this.locationLabel.set_text(this.locationName || 'Lüchow');
         this.humidLabel.visible = this.showHumidity;
         this.pressureLabel.visible = this.showPressure;
@@ -406,6 +409,21 @@ class TuxWetterDesklet extends Desklet.Desklet {
         return themes[selectedTheme];
     }
 
+    _normalizeWeatherProviderSetting() {
+        const labels = {
+            'Open-Meteo (kostenlos)': 'open-meteo',
+            'wttr.in (kostenlos)': 'wttr-in',
+            'MET Norway / yr.no (kostenlos)': 'met-no'
+        };
+        const value = this.settings.getValue('weather-provider') || this.weatherProvider;
+        const normalized = labels[value] || value;
+        const storedLabel = Object.keys(labels).find((label) => labels[label] === normalized) || normalized;
+        if (storedLabel !== value) {
+            this.settings.setValue('weather-provider', storedLabel);
+        }
+        return normalized;
+    }
+
     _normalizeColorThemeSetting() {
         const labels = {
             'Nachtblau': 'nacht',
@@ -474,6 +492,7 @@ class TuxWetterDesklet extends Desklet.Desklet {
         this.content.set_width(CARD_WIDTH);
         this.content.set_height(CARD_HEIGHT);
         this.card.opacity = 255;
+        this.background.opacity = Math.round(this._backgroundAlpha * 255);
         this.card.set_style('background-color: transparent;');
         this._updateGradient(theme);
     }
@@ -514,7 +533,37 @@ class TuxWetterDesklet extends Desklet.Desklet {
 
     on_apply_settings_pressed() {
         this.colorTheme = this.settings.getValue('color-theme') || this.colorTheme;
+        this.weatherProvider = this._normalizeWeatherProviderSetting();
         this._applyAppearance();
+        this._fetchData();
+    }
+
+    on_save_settings_pressed() {
+        this.on_apply_settings_pressed();
+        this._captureAppliedSettings();
+        this._notify(_('Einstellungen gespeichert und übernommen.'));
+    }
+
+    on_cancel_settings_pressed() {
+        Object.keys(this._appliedSettings).forEach((key) => {
+            this.settings.setValue(key, this._appliedSettings[key]);
+        });
+        this._onSettingsChanged();
+        this._notify(_('Änderungen wurden verworfen.'));
+    }
+
+    _captureAppliedSettings() {
+        const keys = [
+            'weather-provider', 'color-theme', 'temperature-unit', 'wind-unit',
+            'update-interval', 'opacity', 'desklet-scale', 'compact-mode',
+            'show-humidity', 'show-pressure', 'show-uv-index', 'show-precipitation',
+            'show-sunrise-sunset', 'show-air-quality', 'show-pollen', 'show-moon',
+            'show-warnings', 'show-temperature-curve'
+        ];
+        this._appliedSettings = {};
+        keys.forEach((key) => {
+            this._appliedSettings[key] = this.settings.getValue(key);
+        });
     }
 
     configureDesklet(tab = 0) {

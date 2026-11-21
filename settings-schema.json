@@ -39,9 +39,9 @@
     "type": "combobox",
     "default": "open-meteo",
     "options": {
-      "open-meteo": "Open-Meteo (kostenlos)",
-      "wttr-in": "wttr.in (kostenlos)",
-      "met-no": "MET Norway / yr.no (kostenlos)"
+      "Open-Meteo (kostenlos)": "open-meteo",
+      "wttr.in (kostenlos)": "wttr-in",
+      "MET Norway / yr.no (kostenlos)": "met-no"
     },
     "description": "Wetterdienst auswählen"
   },
@@ -57,11 +57,6 @@
       "Schiefer": "schiefer"
     },
     "description": "Farbverlauf auswählen"
-  },
-  "apply-settings": {
-    "type": "button",
-    "description": "Änderungen übernehmen",
-    "callback": "on_apply_settings_pressed"
   },
   "temperature-unit": {
     "type": "combobox",
@@ -178,5 +173,15 @@
     "step": 5,
     "units": "%",
     "description": "Größe des Desklets"
+  },
+  "save-settings": {
+    "type": "button",
+    "description": "Speichern und übernehmen",
+    "callback": "on_save_settings_pressed"
+  },
+  "cancel-settings": {
+    "type": "button",
+    "description": "Abbrechen",
+    "callback": "on_cancel_settings_pressed"
   }
 }
