@@ -278,7 +278,8 @@ class TuxWetterDesklet extends Desklet.Desklet {
                 x_align: Clutter.ActorAlign.START,
                 y_align: Clutter.ActorAlign.START,
             });
-            dbarFill.set_size(140, 18);
+            dbarFill.set_size(140, 32);
+            dbarFill.set_y(0);
             dbar.add_child(dbarFill);
             d.add(dbar);
             const dbarSpacer = new St.Widget();
@@ -1212,7 +1213,7 @@ class TuxWetterDesklet extends Desklet.Desklet {
                         this.dailyLabels[i].dbarFill.set_width(
                             pct > 0 ? Math.max(5, Math.round(140 * pct / 100)) : 0
                         );
-                        this.dailyLabels[i].dbarFill.set_height(18);
+                        this.dailyLabels[i].dbarFill.set_height(32);
                         this.dailyLabels[i].dbarFill.set_x(0);
                     }
                 }
