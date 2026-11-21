@@ -485,7 +485,10 @@ class TuxWetterDesklet extends Desklet.Desklet {
     }
 
     _applyAppearance() {
-        this._backgroundAlpha = Math.max(0.85, Math.min(1, Number(this.opacity) / 100 || 0.92));
+        const opacityValue = Number(this.opacity);
+        this._backgroundAlpha = Number.isFinite(opacityValue)
+            ? Math.max(0, Math.min(1, opacityValue / 100))
+            : 0.92;
         const scale = Math.max(0.5, Math.min(1, Number(this.scalePercent) / 100 || 0.72));
         const theme = this._getTheme();
         this.card.set_scale(scale, scale);
@@ -517,7 +520,7 @@ class TuxWetterDesklet extends Desklet.Desklet {
                 red: color[0],
                 green: color[1],
                 blue: color[2],
-                alpha: 255
+                alpha: Math.round(this._backgroundAlpha * 255)
             }));
             strip.set_height(CARD_HEIGHT / GRADIENT_STRIP_COUNT);
             strip.set_width(CARD_WIDTH);
