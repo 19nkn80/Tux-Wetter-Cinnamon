@@ -90,7 +90,7 @@ class TuxWetterDesklet extends Desklet.Desklet {
             strip.set_background_color(new Clutter.Color({
                 red: 61, green: 85, blue: 201, alpha: 255
             }));
-            strip.set_height(CARD_HEIGHT / GRADIENT_STRIP_COUNT);
+            strip.set_height((this._cardHeight || CARD_HEIGHT) / GRADIENT_STRIP_COUNT);
             strip.set_width(CARD_WIDTH);
             strip.set_x_expand(true);
             this.background.add_child(strip);
@@ -133,6 +133,9 @@ class TuxWetterDesklet extends Desklet.Desklet {
         this.settingsButton = new St.Button({label: '⚙', style: 'font-size: 38px; color: #ffffff; padding: 0 12px;'});
         this.settingsButton.connect('clicked', () => this.configureDesklet());
         locationBar.add(this.settingsButton);
+        this.refreshButton = new St.Button({label: '↻', style: 'font-size: 34px; color: #ffffff; padding: 0 10px;'});
+        this.refreshButton.connect('clicked', () => this.on_refresh_pressed());
+        locationBar.add(this.refreshButton);
         headerLeft.add(locationBar);
         
         const temperatureBox = new St.BoxLayout({vertical: false, style: 'margin-top: 4px;'});
@@ -162,6 +165,11 @@ class TuxWetterDesklet extends Desklet.Desklet {
             style: 'font-size: 13px; color: rgba(255,255,255,0.70); margin-bottom: 8px;'
         });
         headerRight.add(this.versionLabel);
+        this.lastUpdatedLabel = new St.Label({
+            text: 'Zuletzt aktualisiert: --:--',
+            style: 'font-size: 13px; color: rgba(255,255,255,0.70); margin-bottom: 8px;'
+        });
+        headerRight.add(this.lastUpdatedLabel);
         
         const metricsBox = new St.BoxLayout({vertical: false});
         this.windLabel = new St.Label({text: '💨 -- km/h', style: 'font-size: 19px; color: #fff; margin-right: 28px;'});
@@ -326,6 +334,10 @@ class TuxWetterDesklet extends Desklet.Desklet {
             this.curveArea.visible = false;
         }
         this._applyAppearance();
+        GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => {
+            this._fitCardToContent();
+            return false;
+        });
         if (this._settingsTimeout) GLib.source_remove(this._settingsTimeout);
         this._settingsTimeout = GLib.timeout_add(
             GLib.PRIORITY_DEFAULT,
@@ -501,11 +513,23 @@ class TuxWetterDesklet extends Desklet.Desklet {
         const theme = this._getTheme();
         this.card.set_scale(scale, scale);
         this.content.set_width(CARD_WIDTH);
-        this.content.set_height(CARD_HEIGHT);
+        this.content.set_height(this._cardHeight || CARD_HEIGHT);
         this.card.opacity = 255;
         this.background.opacity = Math.round(this._backgroundAlpha * 255);
         this.card.set_style('background-color: transparent;');
         this._updateGradient(theme);
+    }
+
+    _fitCardToContent() {
+        if (!this.mainBox) return;
+        const preferredHeight = this.mainBox.get_preferred_height(-1)[1];
+        this._cardHeight = Math.max(CARD_HEIGHT, Math.ceil(preferredHeight) + 24);
+        this.card.set_height(this._cardHeight);
+        this.background.set_height(this._cardHeight);
+        this.content.set_height(this._cardHeight);
+        this.gradientStrips.forEach((strip) => {
+            strip.set_height(this._cardHeight / GRADIENT_STRIP_COUNT);
+        });
     }
 
     _updateGradient(theme) {
@@ -530,14 +554,14 @@ class TuxWetterDesklet extends Desklet.Desklet {
                 blue: color[2],
                 alpha: Math.round(this._backgroundAlpha * 255)
             }));
-            strip.set_height(CARD_HEIGHT / GRADIENT_STRIP_COUNT);
+            strip.set_height((this._cardHeight || CARD_HEIGHT) / GRADIENT_STRIP_COUNT);
             strip.set_width(CARD_WIDTH);
             strip.set_x_expand(true);
             this.background.add_child(strip);
             this.gradientStrips.push(strip);
         }
         this.background.set_width(CARD_WIDTH);
-        this.background.set_height(CARD_HEIGHT);
+        this.background.set_height(this._cardHeight || CARD_HEIGHT);
         this.background.queue_redraw();
         this.card.queue_redraw();
     }
@@ -1097,6 +1121,16 @@ class TuxWetterDesklet extends Desklet.Desklet {
                     }
                 }
             }
+            const updated = new Date();
+            this.lastUpdatedLabel.set_text(
+                'Zuletzt aktualisiert: ' +
+                String(updated.getHours()).padStart(2, '0') + ':' +
+                String(updated.getMinutes()).padStart(2, '0')
+            );
+            GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => {
+                this._fitCardToContent();
+                return false;
+            });
         } catch (e) {
             global.logError('TuX-Wetter Datenabruf: ' + e);
             this.descLabel.set_text('Fehler');
