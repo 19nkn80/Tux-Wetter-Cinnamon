@@ -8,8 +8,9 @@ const ModalDialog = imports.ui.modalDialog;
 const Settings = imports.ui.settings;
 
 const REPOSITORY = '19nkn80/Tux-Wetter-Cinnamon';
-const RAW_BASE_URL = 'https://raw.githubusercontent.com/' + REPOSITORY + '/main/';
-const LOCAL_VERSION = '1.17.0';
+const UPDATE_BRANCH = 'release-0.2';
+const RAW_BASE_URL = 'https://raw.githubusercontent.com/' + REPOSITORY + '/' + UPDATE_BRANCH + '/';
+const LOCAL_VERSION = '0.1';
 const GRADIENT_STRIP_COUNT = 100;
 const CARD_WIDTH = 760;
 const CARD_HEIGHT = 730;
@@ -95,6 +96,7 @@ class TuxWetterDesklet extends Desklet.Desklet {
             this.background.add_child(strip);
             this.gradientStrips.push(strip);
         }
+
         this.card.add_child(this.background);
         this.mainBox = new St.BoxLayout({
             vertical: true,
@@ -541,6 +543,10 @@ class TuxWetterDesklet extends Desklet.Desklet {
         this._fetchData();
     }
 
+    on_check_update_pressed() {
+        this._checkForUpdate();
+    }
+
     on_save_settings_pressed() {
         this.on_apply_settings_pressed();
         this._captureAppliedSettings();
@@ -766,11 +772,12 @@ class TuxWetterDesklet extends Desklet.Desklet {
     _checkForUpdate() {
         try {
             const remote = JSON.parse(this._fetchText(RAW_BASE_URL + 'metadata.json'));
-            if (!remote.version || remote.version === LOCAL_VERSION) {
+            if (!remote.version || Number(remote.version) <= Number(LOCAL_VERSION)) {
                 this._notify(_('Das Desklet ist aktuell.'));
                 return;
             }
 
+            this._notify(_('Update verfügbar: Version ') + remote.version);
             const dialog = new ModalDialog.ConfirmDialog(
                 _('Version %s ist verfügbar. Jetzt installieren?').format(remote.version),
                 () => this._installUpdate()

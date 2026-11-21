@@ -183,5 +183,10 @@
     "type": "button",
     "description": "Abbrechen",
     "callback": "on_cancel_settings_pressed"
+  },
+  "check-update": {
+    "type": "button",
+    "description": "Auf Updates prüfen",
+    "callback": "on_check_update_pressed"
   }
 }

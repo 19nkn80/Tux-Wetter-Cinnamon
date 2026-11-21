@@ -33,7 +33,7 @@ sudo apt install curl
 
 ## Installation über die Cinnamon-Oberfläche
 
-1. Lade `Tux-Wetter-Cinnamon-1.17.0.zip` herunter.
+1. Lade `Tux-Wetter-Cinnamon-0.1.zip` herunter.
 2. Öffne **Systemeinstellungen → Desklets**.
 3. Öffne das Menü **Hinzufügen** beziehungsweise **Aus Datei installieren**.
 4. Wähle die ZIP-Datei aus.
@@ -50,7 +50,7 @@ Wenn deine Cinnamon-Version keinen Dateiimport anbietet:
 
 ```bash
 mkdir -p ~/.local/share/cinnamon/desklets
-unzip Tux-Wetter-Cinnamon-1.17.0.zip -d ~/.local/share/cinnamon/desklets
+unzip Tux-Wetter-Cinnamon-0.1.zip -d ~/.local/share/cinnamon/desklets
 ```
 
 Danach **Systemeinstellungen → Desklets** öffnen, TuX-Wetter aktivieren und
@@ -86,8 +86,11 @@ Zusätzlich funktionieren Mausrad und rechte Maustaste am Desklet.
 ## Aktualisierung
 
 Über das Kontextmenü des Desklets kann nach GitHub-Updates gesucht werden.
-Alternativ kann die neue ZIP-Datei heruntergeladen und erneut über den
-Desklet-Manager importiert werden.
+In den Optionen gibt es zusätzlich **Auf Updates prüfen**. Wenn GitHub eine
+höhere Version meldet, erscheint zuerst ein Hinweis und danach ein Dialog mit
+**Updaten** und **Abbrechen**. Beim Updaten werden die drei Desklet-Dateien
+aus dem GitHub-Updatezweig geladen; Cinnamon muss anschließend neu geladen
+werden.
 
 ## Fehlerbehebung
 
