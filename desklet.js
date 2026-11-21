@@ -112,32 +112,34 @@ class TuxWetterDesklet extends Desklet.Desklet {
         const headerLeft = new St.BoxLayout({vertical: true});
         headerLeft.set_width(380);
         const locationBar = new St.BoxLayout({
-            vertical: false,
+            vertical: true,
             style: 'margin-bottom: 2px; padding: 1px 2px;'
         });
+        this.locationLabel = new St.Label({text: 'Lüchow', style: 'font-size: 36px; font-weight: 600; color: #fff;'});
+        locationBar.add(this.locationLabel);
+        const locationControls = new St.BoxLayout({vertical: false});
         this.previousLocationButton = new St.Button({label: '‹', style: 'font-size: 48px; color: #ffffff; padding: 0 12px;'});
         this.previousLocationButton.connect('button-press-event', () => {
             this._cycleLocation(-1);
             return Clutter.EVENT_STOP;
         });
-        locationBar.add(this.previousLocationButton);
-        this.locationLabel = new St.Label({text: 'Lüchow', style: 'font-size: 36px; font-weight: 600; color: #fff;'});
-        locationBar.add(this.locationLabel);
+        locationControls.add(this.previousLocationButton);
         this.nextLocationButton = new St.Button({label: '›', style: 'font-size: 48px; color: #ffffff; padding: 0 12px;'});
         this.nextLocationButton.connect('button-press-event', () => {
             this._cycleLocation(1);
             return Clutter.EVENT_STOP;
         });
-        locationBar.add(this.nextLocationButton);
+        locationControls.add(this.nextLocationButton);
         this.settingsButton = new St.Button({label: '⚙', style: 'font-size: 38px; color: #ffffff; padding: 0 12px;'});
         this.settingsButton.connect('clicked', () => this.configureDesklet());
-        locationBar.add(this.settingsButton);
+        locationControls.add(this.settingsButton);
         this.refreshButton = new St.Button({label: '↻', style: 'font-size: 34px; color: #ffffff; padding: 0 10px;'});
         this.refreshButton.connect('button-press-event', () => {
             this.on_refresh_pressed();
             return Clutter.EVENT_STOP;
         });
-        locationBar.add(this.refreshButton);
+        locationControls.add(this.refreshButton);
+        locationBar.add(locationControls);
         headerLeft.add(locationBar);
         
         const temperatureBox = new St.BoxLayout({vertical: false, style: 'margin-top: 4px;'});
