@@ -161,18 +161,25 @@ class TuxWetterDesklet extends Desklet.Desklet {
             style: 'font-size: 19px; color: rgba(255,255,255,0.85); margin-bottom: 8px;'
         });
         headerRight.add(this.providerLabel);
-        const metricsBox = new St.BoxLayout({vertical: false});
-        this.windLabel = new St.Label({text: '💨 -- km/h', style: 'font-size: 19px; color: #fff; margin-right: 28px;'});
-        metricsBox.add(this.windLabel);
-        this.rainLabel = new St.Label({text: '☔ --%', style: 'font-size: 19px; color: #fff; margin-right: 28px;'});
-        metricsBox.add(this.rainLabel);
-        this.humidLabel = new St.Label({text: '💧 --%', style: 'font-size: 19px; color: #fff;'});
-        metricsBox.add(this.humidLabel);
-        this.pressureLabel = new St.Label({text: '-- hPa', style: 'font-size: 11px; color: #d0d0d0; margin-top: 5px;'});
+        const metricsBox = new St.BoxLayout({vertical: true, style: 'margin-top: 2px;'});
+        const metricsRowOne = new St.BoxLayout({vertical: false, style: 'margin-bottom: 4px;'});
+        this.windLabel = new St.Label({text: 'Wind: -- km/h', style: 'font-size: 17px; color: #fff; margin-right: 28px;'});
+        metricsRowOne.add(this.windLabel);
+        this.rainLabel = new St.Label({text: 'Regen: --%', style: 'font-size: 17px; color: #fff;'});
+        metricsRowOne.add(this.rainLabel);
+        metricsBox.add(metricsRowOne);
+        const metricsRowTwo = new St.BoxLayout({vertical: false});
+        this.humidLabel = new St.Label({text: 'Feuchte: --%', style: 'font-size: 17px; color: #fff; margin-right: 28px;'});
+        metricsRowTwo.add(this.humidLabel);
+        this.pressureLabel = new St.Label({text: 'Druck: -- hPa', style: 'font-size: 17px; color: #d0d0d0;'});
+        metricsRowTwo.add(this.pressureLabel);
+        metricsBox.add(metricsRowTwo);
         headerRight.add(metricsBox);
         
-        this.feelsLabel = new St.Label({text: 'gefühlt --°C    --° / --°', style: 'font-size: 19px; color: #e8e8e8; margin-top: 16px;'});
+        this.feelsLabel = new St.Label({text: 'Gefühlt: --°C', style: 'font-size: 17px; color: #e8e8e8; margin-top: 10px;'});
         headerRight.add(this.feelsLabel);
+        this.todayRangeLabel = new St.Label({text: 'Heute: --° / --°', style: 'font-size: 17px; color: #e8e8e8; margin-top: 3px;'});
+        headerRight.add(this.todayRangeLabel);
         
         headerBox.add(headerRight);
         this.mainBox.add(headerBox);
@@ -1107,11 +1114,12 @@ class TuxWetterDesklet extends Desklet.Desklet {
             this.tempLabel.set_text(this._formatTemperature(c.temperature_2m));
             this.descLabel.set_text(this._getDesc(c.weather_code));
             this.windLabel.set_text(
-                this._windArrow(c.wind_direction_10m) + ' ' + this._formatWind(c.wind_speed_10m)
+                'Wind: ' + this._windArrow(c.wind_direction_10m) + ' ' +
+                this._formatWind(c.wind_speed_10m)
             );
-            this.rainLabel.set_text(Math.round(c.precipitation_probability) + '%');
-            this.humidLabel.set_text(c.relative_humidity_2m + '%');
-            this.pressureLabel.set_text(Math.round(c.pressure_msl || 0) + ' hPa');
+            this.rainLabel.set_text('Regen: ' + Math.round(c.precipitation_probability) + '%');
+            this.humidLabel.set_text('Feuchte: ' + c.relative_humidity_2m + '%');
+            this.pressureLabel.set_text('Druck: ' + Math.round(c.pressure_msl || 0) + ' hPa');
             this.feelsLabel.set_text('gefühlt ' + this._formatTemperature(c.apparent_temperature));
             this.currentIcon.set_text(this._getIcon(c.weather_code));
             this.uvLabel.set_text('☀ UV-Index: ' + Math.round(c.uv_index));
@@ -1170,7 +1178,10 @@ class TuxWetterDesklet extends Desklet.Desklet {
                 }
             }
             this.feelsLabel.set_text(
-                'gefühlt ' + this._formatTemperature(c.apparent_temperature) + '    ' +
+                'Gefühlt: ' + this._formatTemperature(c.apparent_temperature)
+            );
+            this.todayRangeLabel.set_text(
+                'Heute: ' +
                 (j.daily ? this._formatTemperature(j.daily.temperature_2m_max[0]) : '--') + ' / ' +
                 (j.daily ? this._formatTemperature(j.daily.temperature_2m_min[0]) : '--')
             );
