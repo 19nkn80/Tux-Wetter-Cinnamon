@@ -147,22 +147,6 @@ class TuxWetterDesklet extends Desklet.Desklet {
         this.tempLabel = new St.Label({text: '--°', style: 'font-size: 78px; font-weight: 600; color: #fff;'});
         temperatureBox.add(this.tempLabel);
         headerLeft.add(temperatureBox);
-        this.versionLabel = new St.Label({
-            text: 'Installierte Version: ' + LOCAL_VERSION,
-            style: 'font-size: 14px; color: rgba(255,255,255,0.78); margin-top: 5px;'
-        });
-        headerLeft.add(this.versionLabel);
-        this.forkLabel = new St.Label({
-            text: 'Fork von Tux-Wetter-KDE von Mastertac',
-            style: 'font-size: 12px; color: rgba(255,255,255,0.65); margin-top: 2px;'
-        });
-        headerLeft.add(this.forkLabel);
-        this.lastUpdatedLabel = new St.Label({
-            text: 'Zuletzt aktualisiert: --:--',
-            style: 'font-size: 14px; color: rgba(255,255,255,0.78); margin-top: 3px;'
-        });
-        headerLeft.add(this.lastUpdatedLabel);
-        
         headerBox.add(headerLeft);
         
         const headerRight = new St.BoxLayout({
@@ -290,6 +274,33 @@ class TuxWetterDesklet extends Desklet.Desklet {
         this.curveArea.set_x_expand(true);
         this.curveArea.visible = false;
         this.mainBox.add(this.curveArea);
+
+        const statusBox = new St.BoxLayout({
+            vertical: false,
+            style: 'margin-top: 10px; padding-top: 6px; border-top: 1px solid rgba(255,255,255,0.18);'
+        });
+        statusBox.set_x_expand(true);
+        const statusLeft = new St.BoxLayout({vertical: true});
+        this.versionLabel = new St.Label({
+            text: 'TuX-Wetter',
+            style: 'font-size: 14px; color: rgba(255,255,255,0.78);'
+        });
+        statusLeft.add(this.versionLabel);
+        this.forkLabel = new St.Label({
+            text: 'Fork von Tux-Wetter-KDE von Mastertac',
+            style: 'font-size: 12px; color: rgba(255,255,255,0.65); margin-top: 2px;'
+        });
+        statusLeft.add(this.forkLabel);
+        statusBox.add(statusLeft);
+        const statusSpacer = new St.Widget();
+        statusSpacer.set_x_expand(true);
+        statusBox.add(statusSpacer);
+        this.lastUpdatedLabel = new St.Label({
+            text: 'Zuletzt aktualisiert: --:--',
+            style: 'font-size: 14px; color: rgba(255,255,255,0.78);'
+        });
+        statusBox.add(this.lastUpdatedLabel);
+        this.mainBox.add(statusBox);
         
         this.setContent(this.card);
         this.card.reactive = true;
