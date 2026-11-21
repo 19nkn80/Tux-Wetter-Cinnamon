@@ -253,9 +253,11 @@ class TuxWetterDesklet extends Desklet.Desklet {
             d.add(rain);
             const dmin = new St.Label({text: '4°', style: 'font-size: 20px; color: #ddd; width: 55px;'});
             d.add(dmin);
-            const dbar = new St.Widget({
+            const dbar = new Clutter.Actor({
                 layout_manager: new Clutter.BinLayout(),
-                style: 'background-color: rgba(255,255,255,0.18); min-height: 18px; max-height: 18px; padding: 0; margin: 2px 18px 0 0;'
+                background_color: new Clutter.Color({
+                    red: 255, green: 255, blue: 255, alpha: 48
+                })
             });
             dbar.set_width(140);
             dbar.set_height(18);
@@ -267,7 +269,6 @@ class TuxWetterDesklet extends Desklet.Desklet {
                 y_align: Clutter.ActorAlign.FILL,
             });
             dbarFill.set_size(140, 18);
-            dbarFill.set_y(0);
             dbar.add_child(dbarFill);
             d.add(dbar);
             const dmax = new St.Label({text: '9°', style: 'font-size: 20px; color: #fff;'});
