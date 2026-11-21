@@ -665,6 +665,7 @@ class TuxWetterDesklet extends Desklet.Desklet {
             return;
         }
         try {
+            this._draggable.inhibit = true;
             const argv = [
                 'xlet-settings',
                 'desklet',
@@ -1181,33 +1182,17 @@ class TuxWetterDesklet extends Desklet.Desklet {
             }
             
             if (j.daily && j.daily.weather_code) {
-                const dailyMins = j.daily.temperature_2m_min || [];
-                const dailyMaxs = j.daily.temperature_2m_max || [];
-                const validTemps = dailyMins.concat(dailyMaxs).filter((value) =>
-                    Number.isFinite(Number(value))
-                ).map(Number);
-                const scaleMin = validTemps.length > 0 ? Math.min.apply(null, validTemps) : 0;
-                const scaleMax = validTemps.length > 0 ? Math.max.apply(null, validTemps) : 1;
-                const scaleRange = Math.max(1, scaleMax - scaleMin);
                 for (let i = 0; i < this.dailyLabels.length; i++) {
                     if (i < j.daily.weather_code.length) {
                         const pct = j.daily.precipitation_probability_max[i] || 0;
-                        const dayMin = Number(dailyMins[i]);
-                        const dayMax = Number(dailyMaxs[i]);
-                        const barStart = Math.round(((dayMin - scaleMin) / scaleRange) * 140);
-                        const barEnd = Math.round(((dayMax - scaleMin) / scaleRange) * 140);
                         this.dailyLabels[i].dic.set_text(this._getIcon(j.daily.weather_code[i]));
                         this.dailyLabels[i].rain.set_text(Math.round(pct) + '%');
                         this.dailyLabels[i].dmin.set_text(this._formatTemperature(j.daily.temperature_2m_min[i]));
                         this.dailyLabels[i].dmax.set_text(this._formatTemperature(j.daily.temperature_2m_max[i]));
                         this.dailyLabels[i].dbarFill.set_width(
-                            Number.isFinite(dayMin) && Number.isFinite(dayMax)
-                                ? Math.max(5, barEnd - barStart)
-                                : 0
+                            pct > 0 ? Math.max(5, Math.round(140 * pct / 100)) : 0
                         );
-                        this.dailyLabels[i].dbarFill.set_x(
-                            Number.isFinite(dayMin) ? Math.max(0, Math.min(140, barStart)) : 0
-                        );
+                        this.dailyLabels[i].dbarFill.set_x(0);
                     }
                 }
             }
@@ -1228,6 +1213,7 @@ class TuxWetterDesklet extends Desklet.Desklet {
     }
 
     on_desklet_added_to_desktop() {
+        this._draggable.inhibit = true;
         this._onSettingsChanged();
         this._fetchData();
         this._autoUpdateTimeout = GLib.timeout_add(GLib.PRIORITY_DEFAULT, 1500, () => {
@@ -1238,6 +1224,7 @@ class TuxWetterDesklet extends Desklet.Desklet {
     }
 
     on_desklet_removed() {
+        this._draggable.inhibit = true;
         if (this._timeout) {
             GLib.source_remove(this._timeout);
             this._timeout = 0;
