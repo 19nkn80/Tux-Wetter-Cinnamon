@@ -103,7 +103,6 @@ class TuxWetterDesklet extends Desklet.Desklet {
             style: 'padding: 20px 28px 8px;'
         });
         this.mainBox.set_x_expand(true);
-        this.mainBox.set_y_expand(true);
         this.card.add_child(this.mainBox);
         
         const headerBox = new St.BoxLayout({
@@ -291,7 +290,7 @@ class TuxWetterDesklet extends Desklet.Desklet {
         statusBox.set_x_expand(true);
         const statusLeft = new St.BoxLayout({vertical: true});
         this.versionLabel = new St.Label({
-            text: 'TuX-Wetter',
+            text: 'TuX-Wetter ' + LOCAL_VERSION,
             style: 'font-size: 18px; color: rgba(255,255,255,0.78);'
         });
         statusLeft.add(this.versionLabel);
@@ -553,11 +552,11 @@ class TuxWetterDesklet extends Desklet.Desklet {
 
     _fitCardToContent() {
         if (!this.mainBox) return;
+        this.mainBox.set_height(-1);
         const preferredHeight = this.mainBox.get_preferred_height(-1)[1];
         this._cardHeight = Math.max(CARD_HEIGHT, Math.ceil(preferredHeight) + 32);
         this.card.set_height(this._cardHeight);
         this.background.set_height(this._cardHeight);
-        this.mainBox.set_height(this._cardHeight);
         const scale = Math.max(0.5, Math.min(1, Number(this.scalePercent) / 100 || 0.72));
         this.content.set_width(CARD_WIDTH * scale);
         this.content.set_height(this._cardHeight * scale);
