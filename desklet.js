@@ -254,12 +254,21 @@ class TuxWetterDesklet extends Desklet.Desklet {
             d.add(rain);
             const dmin = new St.Label({text: '4°', style: 'font-size: 20px; color: #ddd; width: 55px;'});
             d.add(dmin);
-            const dbar = new St.Label({text: '━━━━━━', style: 'font-size: 16px; color: #ffd43b; width: 330px;'});
+            const dbar = new St.Widget({
+                style: 'background-color: rgba(255,255,255,0.18); border-radius: 4px; margin: 8px 18px 0 0;'
+            });
+            dbar.set_width(140);
+            dbar.set_height(6);
+            const dbarFill = new St.Widget({
+                style: 'background-color: #ffd43b; border-radius: 4px;'
+            });
+            dbarFill.set_height(6);
+            dbar.add_child(dbarFill);
             d.add(dbar);
             const dmax = new St.Label({text: '9°', style: 'font-size: 20px; color: #fff;'});
             d.add(dmax);
             dailyBox.add(d);
-            this.dailyLabels.push({dn, dic, rain, dmin, dmax, dbar});
+            this.dailyLabels.push({dn, dic, rain, dmin, dmax, dbar, dbarFill});
         }
         this.mainBox.add(dailyBox);
 
@@ -562,7 +571,7 @@ class TuxWetterDesklet extends Desklet.Desklet {
 
     _keepOnScreen() {
         if (!this.actor || !Main.layoutManager || !this.actor.get_stage()) return;
-        const monitor = this.actor.get_monitor();
+        const monitor = Main.layoutManager.findMonitorForActor(this.actor);
         const workArea = Main.layoutManager.getWorkAreaForMonitor(monitor);
         const [x, y] = this.actor.get_position();
         const width = this.content.width || 0;
@@ -1174,13 +1183,13 @@ class TuxWetterDesklet extends Desklet.Desklet {
                 for (let i = 0; i < this.dailyLabels.length; i++) {
                     if (i < j.daily.weather_code.length) {
                         const pct = j.daily.precipitation_probability_max[i] || 0;
-                        const filled = Math.round(pct / 20);
-                        const bar = '█'.repeat(filled) + '░'.repeat(5 - filled);
                         this.dailyLabels[i].dic.set_text(this._getIcon(j.daily.weather_code[i]));
                         this.dailyLabels[i].rain.set_text(Math.round(pct) + '%');
                         this.dailyLabels[i].dmin.set_text(this._formatTemperature(j.daily.temperature_2m_min[i]));
                         this.dailyLabels[i].dmax.set_text(this._formatTemperature(j.daily.temperature_2m_max[i]));
-                        this.dailyLabels[i].dbar.set_text(bar);
+                        this.dailyLabels[i].dbarFill.set_width(
+                            pct > 0 ? Math.max(5, Math.round(140 * pct / 100)) : 0
+                        );
                     }
                 }
             }
