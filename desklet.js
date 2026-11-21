@@ -541,8 +541,8 @@ class TuxWetterDesklet extends Desklet.Desklet {
         this.card.set_scale(scale, scale);
         this.card.set_pivot_point(0, 0);
         this.content.set_pivot_point(0, 0);
-        this.content.set_width(CARD_WIDTH * scale);
-        this.content.set_height((this._cardHeight || CARD_HEIGHT) * scale);
+        this.content.set_width(CARD_WIDTH);
+        this.content.set_height(this._cardHeight || CARD_HEIGHT);
         this.card.opacity = 255;
         this.background.opacity = Math.round(this._backgroundAlpha * 255);
         this.card.set_style('background-color: transparent;');
@@ -559,8 +559,8 @@ class TuxWetterDesklet extends Desklet.Desklet {
         this.background.set_height(this._cardHeight);
         this.mainBox.set_height(this._cardHeight);
         const scale = Math.max(0.5, Math.min(1, Number(this.scalePercent) / 100 || 0.72));
-        this.content.set_width(CARD_WIDTH * scale);
-        this.content.set_height(this._cardHeight * scale);
+        this.content.set_width(CARD_WIDTH);
+        this.content.set_height(this._cardHeight);
         this.card.queue_relayout();
         this.content.queue_relayout();
         this.gradientStrips.forEach((strip) => {
@@ -574,8 +574,9 @@ class TuxWetterDesklet extends Desklet.Desklet {
         const monitor = Main.layoutManager.findMonitorForActor(this.actor);
         const workArea = global.display.get_monitor_geometry(monitor);
         const [x, y] = this.actor.get_position();
-        const width = this.content.width || 0;
-        const height = this.content.height || 0;
+        const scale = Math.max(0.5, Math.min(1, Number(this.scalePercent) / 100 || 0.72));
+        const width = CARD_WIDTH * scale;
+        const height = (this._cardHeight || CARD_HEIGHT) * scale;
         if (width <= 0 || height <= 0) return;
         const maxX = Math.max(workArea.x, workArea.x + workArea.width - width);
         const maxY = Math.max(workArea.y, workArea.y + workArea.height - height);
