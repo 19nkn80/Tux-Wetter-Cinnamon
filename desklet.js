@@ -162,18 +162,14 @@ class TuxWetterDesklet extends Desklet.Desklet {
         });
         headerRight.add(this.providerLabel);
         const metricsBox = new St.BoxLayout({vertical: true, style: 'margin-top: 2px;'});
-        const metricsRowOne = new St.BoxLayout({vertical: false, style: 'margin-bottom: 4px;'});
-        this.windLabel = new St.Label({text: 'Wind: -- km/h', style: 'font-size: 17px; color: #fff; margin-right: 28px;'});
-        metricsRowOne.add(this.windLabel);
-        this.rainLabel = new St.Label({text: 'Regen: --%', style: 'font-size: 17px; color: #fff;'});
-        metricsRowOne.add(this.rainLabel);
-        metricsBox.add(metricsRowOne);
-        const metricsRowTwo = new St.BoxLayout({vertical: false});
-        this.humidLabel = new St.Label({text: 'Feuchte: --%', style: 'font-size: 17px; color: #fff; margin-right: 28px;'});
-        metricsRowTwo.add(this.humidLabel);
-        this.pressureLabel = new St.Label({text: 'Druck: -- hPa', style: 'font-size: 17px; color: #d0d0d0;'});
-        metricsRowTwo.add(this.pressureLabel);
-        metricsBox.add(metricsRowTwo);
+        this.windLabel = new St.Label({text: 'Wind: -- km/h', style: 'font-size: 15px; color: #fff; margin-bottom: 3px;'});
+        metricsBox.add(this.windLabel);
+        this.rainLabel = new St.Label({text: 'Regen: --%', style: 'font-size: 15px; color: #fff; margin-bottom: 3px;'});
+        metricsBox.add(this.rainLabel);
+        this.humidLabel = new St.Label({text: 'Feuchte: --%', style: 'font-size: 15px; color: #fff; margin-bottom: 3px;'});
+        metricsBox.add(this.humidLabel);
+        this.pressureLabel = new St.Label({text: 'Druck: -- hPa', style: 'font-size: 15px; color: #d0d0d0; margin-bottom: 3px;'});
+        metricsBox.add(this.pressureLabel);
         headerRight.add(metricsBox);
         
         this.feelsLabel = new St.Label({text: 'Gefühlt: --°C', style: 'font-size: 16px; color: #e8e8e8; margin-top: 8px;'});
@@ -188,18 +184,18 @@ class TuxWetterDesklet extends Desklet.Desklet {
         hourlyBox.set_x_expand(true);
         this.hourlyBox = hourlyBox;
         this.hourlyLabels = [];
-        for (let i = 0; i < 6; i++) {
+        for (let i = 0; i < 8; i++) {
             const h = new St.BoxLayout({vertical: true});
             h.set_x_expand(true);
-            const t = new St.Label({text: '18:00', style: 'font-size: 20px; color: #ddd;'});
+            const t = new St.Label({text: '18:00', style: 'font-size: 17px; color: #ddd;'});
             t.set_x_expand(true);
             t.set_x_align(Clutter.ActorAlign.CENTER);
             h.add(t);
-            const ic = new St.Label({text: '🌙', style: 'font-size: 38px; margin: 7px 0;'});
+            const ic = new St.Label({text: '🌙', style: 'font-size: 30px; margin: 5px 0;'});
             ic.set_x_expand(true);
             ic.set_x_align(Clutter.ActorAlign.CENTER);
             h.add(ic);
-            const te = new St.Label({text: '4°', style: 'font-size: 25px; color: #fff;'});
+            const te = new St.Label({text: '4°', style: 'font-size: 21px; color: #fff;'});
             te.set_x_expand(true);
             te.set_x_align(Clutter.ActorAlign.CENTER);
             h.add(te);
@@ -1205,7 +1201,7 @@ class TuxWetterDesklet extends Desklet.Desklet {
                 this.hourlyData = j.hourly;
                 const now = new Date();
                 const idx = now.getHours();
-                for (let i = 0; i < 6; i++) {
+                for (let i = 0; i < 8; i++) {
                     const h = idx + i;
                     if (h < j.hourly.temperature_2m.length) {
                         this.hourlyLabels[i].t.set_text((h % 24).toString().padStart(2, '0') + ':00');
