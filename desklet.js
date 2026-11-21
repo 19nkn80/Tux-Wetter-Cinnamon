@@ -157,6 +157,11 @@ class TuxWetterDesklet extends Desklet.Desklet {
             style: 'font-size: 19px; color: rgba(255,255,255,0.85); margin-bottom: 8px;'
         });
         headerRight.add(this.providerLabel);
+        this.versionLabel = new St.Label({
+            text: 'TuX-Wetter ' + LOCAL_VERSION + ' · Fork von Tux-Wetter-KDE von Mastertac',
+            style: 'font-size: 13px; color: rgba(255,255,255,0.70); margin-bottom: 8px;'
+        });
+        headerRight.add(this.versionLabel);
         
         const metricsBox = new St.BoxLayout({vertical: false});
         this.windLabel = new St.Label({text: '💨 -- km/h', style: 'font-size: 19px; color: #fff; margin-right: 28px;'});
@@ -295,6 +300,7 @@ class TuxWetterDesklet extends Desklet.Desklet {
         this._settingsTimeout = 0;
         this._settingsProcess = 0;
         this._locationFetchTimeout = 0;
+        this._autoUpdateTimeout = 0;
         this._locationIndex = -1;
         this._captureAppliedSettings();
     }
@@ -769,11 +775,11 @@ class TuxWetterDesklet extends Desklet.Desklet {
         return warnings.length ? warnings[0].properties : null;
     }
 
-    _checkForUpdate() {
+    _checkForUpdate(silentIfCurrent = false) {
         try {
             const remote = JSON.parse(this._fetchText(RAW_BASE_URL + 'metadata.json'));
             if (!remote.version || Number(remote.version) <= Number(LOCAL_VERSION)) {
-                this._notify(_('Das Desklet ist aktuell.'));
+                if (!silentIfCurrent) this._notify(_('Das Desklet ist aktuell.'));
                 return;
             }
 
@@ -1100,6 +1106,11 @@ class TuxWetterDesklet extends Desklet.Desklet {
     on_desklet_added_to_desktop() {
         this._onSettingsChanged();
         this._fetchData();
+        this._autoUpdateTimeout = GLib.timeout_add(GLib.PRIORITY_DEFAULT, 1500, () => {
+            this._autoUpdateTimeout = 0;
+            this._checkForUpdate(true);
+            return false;
+        });
     }
 
     on_desklet_removed() {
@@ -1114,6 +1125,10 @@ class TuxWetterDesklet extends Desklet.Desklet {
         if (this._locationFetchTimeout) {
             GLib.source_remove(this._locationFetchTimeout);
             this._locationFetchTimeout = 0;
+        }
+        if (this._autoUpdateTimeout) {
+            GLib.source_remove(this._autoUpdateTimeout);
+            this._autoUpdateTimeout = 0;
         }
     }
 

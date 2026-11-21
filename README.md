@@ -4,6 +4,8 @@ TuX-Wetter ist ein deutschsprachiges Wetter-Desklet für Cinnamon. Es zeigt
 aktuelle Wetterdaten, Stunden- und Tagesprognosen, mehrere gespeicherte Orte,
 Wetterwarnungen sowie optionale Luftqualitäts-, Pollen- und Monddaten.
 
+**TuX-Wetter 0.x ist ein Fork von Tux-Wetter-KDE von Mastertac.**
+
 ## Voraussetzungen
 
 - Linux mit **Cinnamon 6.6 oder neuer**
@@ -91,6 +93,9 @@ höhere Version meldet, erscheint zuerst ein Hinweis und danach ein Dialog mit
 **Updaten** und **Abbrechen**. Beim Updaten werden die drei Desklet-Dateien
 aus dem GitHub-Updatezweig geladen; Cinnamon muss anschließend neu geladen
 werden.
+
+Beim Start prüft das Desklet automatisch, ob auf GitHub eine neuere Version
+vorliegt. Die aktuell installierte Version wird oben im Desklet angezeigt.
 
 ## Fehlerbehebung
 
