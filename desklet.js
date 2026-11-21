@@ -110,7 +110,7 @@ class TuxWetterDesklet extends Desklet.Desklet {
             style: 'margin-bottom: 12px; padding: 8px 4px; border-bottom: 1px solid rgba(255,255,255,0.24);'
         });
         const headerLeft = new St.BoxLayout({vertical: true});
-        headerLeft.set_width(320);
+        headerLeft.set_width(380);
         const locationBar = new St.BoxLayout({
             vertical: false,
             style: 'margin-bottom: 2px; padding: 1px 2px;'
@@ -121,7 +121,7 @@ class TuxWetterDesklet extends Desklet.Desklet {
             return Clutter.EVENT_STOP;
         });
         locationBar.add(this.previousLocationButton);
-        this.locationLabel = new St.Label({text: 'Lüchow', style: 'font-size: 38px; font-weight: 600; color: #fff;'});
+        this.locationLabel = new St.Label({text: 'Lüchow', style: 'font-size: 36px; font-weight: 600; color: #fff;'});
         locationBar.add(this.locationLabel);
         this.nextLocationButton = new St.Button({label: '›', style: 'font-size: 48px; color: #ffffff; padding: 0 12px;'});
         this.nextLocationButton.connect('button-press-event', () => {
