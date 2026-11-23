@@ -11,7 +11,7 @@ const Tooltips = imports.ui.tooltips;
 
 const REPOSITORY = '19nkn80/Tux-Wetter-Cinnamon';
 const UPDATE_BRANCH = 'GuideOS-1.1-Cinnamon-6.4.13';
-const RAW_BASE_URL = 'https://raw.githubusercontent.com/' + REPOSITORY + '/' + UPDATE_BRANCH + '/';
+const UPDATE_API_URL = 'https://api.github.com/repos/' + REPOSITORY + '/contents/';
 const LOCAL_VERSION = '0.3';
 const GRADIENT_STRIP_COUNT = 100;
 const CARD_WIDTH = 760;
@@ -899,8 +899,9 @@ class TuxWetterDesklet extends Desklet.Desklet {
         Main.notify('TuX-Wetter', message);
     }
 
-    _fetchText(url) {
-        const command = 'curl -fsSL --max-time 15 "' + url + '"';
+    _fetchText(url, github = false) {
+        const command = 'curl -fsSL --max-time 15 ' +
+            (github ? '-H "Accept: application/vnd.github.raw+json" ' : '') + '"' + url + '"';
         const [success, output, error, status] = GLib.spawn_command_line_sync(command);
         if (!success || status !== 0 || !output || output.length === 0) {
             const details = error ? imports.byteArray.toString(error).trim() : '';
@@ -976,7 +977,9 @@ class TuxWetterDesklet extends Desklet.Desklet {
 
     _checkForUpdate(silentIfCurrent = false) {
         try {
-            const remote = JSON.parse(this._fetchText(RAW_BASE_URL + 'metadata.json'));
+            const remote = JSON.parse(this._fetchText(
+                UPDATE_API_URL + 'metadata.json?ref=' + UPDATE_BRANCH, true
+            ));
             if (!remote.version || Number(remote.version) <= Number(LOCAL_VERSION)) {
                 if (!silentIfCurrent) this._notify(_('Das Desklet ist aktuell.'));
                 return;
@@ -998,7 +1001,9 @@ class TuxWetterDesklet extends Desklet.Desklet {
         try {
             const files = ['desklet.js', 'metadata.json', 'settings-schema.json'];
             for (let i = 0; i < files.length; i++) {
-                const content = this._fetchText(RAW_BASE_URL + files[i]);
+                const content = this._fetchText(
+                    UPDATE_API_URL + files[i] + '?ref=' + UPDATE_BRANCH, true
+                );
                 const path = GLib.build_filenamev([
                     this.metadata.path,
                     files[i]
