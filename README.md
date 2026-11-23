@@ -16,7 +16,8 @@ Wetterwarnungen sowie optionale Luftqualitäts-, Pollen- und Monddaten.
 
 ## Voraussetzungen
 
-- Linux mit **Cinnamon 6.6 oder neuer**
+- Linux mit **Cinnamon 6.6 oder neuer**. Cinnamon 6.4.13 wird nicht
+  unterstützt.
 - funktionierendes Internet
 - `curl`
 - ein Wetterdienst ohne Registrierung:
