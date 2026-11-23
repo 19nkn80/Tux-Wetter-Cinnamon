@@ -155,11 +155,13 @@ class TuxWetterDesklet extends Desklet.Desklet {
             style: 'margin-left: 10px; margin-top: 48px; padding-left: 10px;'
         });
         headerRight.set_width(320);
-        this.lockButton = new St.Button({
-            label: '🔓 Offen',
-            style: 'font-size: 24px; padding: 1px 6px; margin-bottom: 4px;'
-        });
+        this.lockButton = new St.Button({style: 'padding: 2px 6px; margin-bottom: 4px;'});
         this.lockButton.set_x_align(Clutter.ActorAlign.END);
+        this.lockIcon = new St.DrawingArea();
+        this.lockIcon.set_width(34);
+        this.lockIcon.set_height(34);
+        this.lockIcon.connect('repaint', () => this._drawLockIcon());
+        this.lockButton.set_child(this.lockIcon);
         this.lockButton.connect('clicked', () => this._toggleDragLock());
         headerRight.add(this.lockButton);
         
@@ -744,7 +746,6 @@ class TuxWetterDesklet extends Desklet.Desklet {
             this._lockAnimationTimeout = 0;
         }
         let frame = 0;
-        const targetLabel = this._isLocked ? '🔒 Gesperrt' : '🔓 Offen';
         this._lockAnimationTimeout = GLib.timeout_add(GLib.PRIORITY_DEFAULT, 30, () => {
             frame++;
             const progress = frame / 8;
@@ -752,7 +753,7 @@ class TuxWetterDesklet extends Desklet.Desklet {
                 ? 1 - progress * 1.8
                 : (progress - 0.5) * 1.8;
             this.lockButton.set_scale(Math.max(0.1, scaleX), 1);
-            if (frame === 4) this.lockButton.set_label(targetLabel);
+            if (frame === 4) this.lockIcon.queue_repaint();
             if (frame >= 8) {
                 this.lockButton.set_scale(1, 1);
                 this._lockAnimationTimeout = 0;
@@ -760,6 +761,36 @@ class TuxWetterDesklet extends Desklet.Desklet {
             }
             return GLib.SOURCE_CONTINUE;
         });
+    }
+
+    _drawLockIcon() {
+        const cr = this.lockIcon.get_context();
+        cr.setLineWidth(3);
+        cr.setLineCap(1);
+        cr.setSourceRGBA(1, 1, 1, 1);
+
+        cr.rectangle(8, 15, 18, 14);
+        cr.stroke();
+        cr.moveTo(15, 22);
+        cr.arc(17, 22, 2, 0, Math.PI * 2);
+        cr.stroke();
+        cr.moveTo(17, 24);
+        cr.lineTo(17, 27);
+        cr.stroke();
+
+        if (this._isLocked) {
+            cr.moveTo(11, 15);
+            cr.lineTo(11, 10);
+            cr.curveTo(11, 2, 23, 2, 23, 10);
+            cr.lineTo(23, 15);
+        } else {
+            cr.moveTo(23, 15);
+            cr.lineTo(23, 10);
+            cr.curveTo(23, 5, 29, 5, 29, 10);
+            cr.lineTo(29, 13);
+        }
+        cr.stroke();
+        cr.$dispose();
     }
 
     on_location_search_pressed() {
