@@ -6,6 +6,14 @@ Wetterwarnungen sowie optionale Luftqualitäts-, Pollen- und Monddaten.
 
 **TuX-Wetter 0.x ist ein Fork von Tux-Wetter-KDE von Mastertac.**
 
+## Version 0.3
+
+- Verschieben lässt sich direkt über ein Schloss im Desklet sperren und
+  entsperren.
+- Das Schloss zeigt den Zustand als weiße Kontur und animiert beim Umschalten.
+- Das Optionenfenster verändert den Verschiebezustand nicht mehr automatisch.
+- Die Versionsanzeige und das Installationspaket wurden auf `0.3` aktualisiert.
+
 ## Voraussetzungen
 
 - Linux mit **Cinnamon 6.6 oder neuer**
