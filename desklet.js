@@ -155,6 +155,13 @@ class TuxWetterDesklet extends Desklet.Desklet {
             style: 'margin-left: 10px; margin-top: 48px; padding-left: 10px;'
         });
         headerRight.set_width(320);
+        this.lockButton = new St.Button({
+            label: '🔓',
+            style: 'font-size: 24px; padding: 2px 6px; margin-bottom: 4px;'
+        });
+        this.lockButton.set_x_align(Clutter.ActorAlign.END);
+        this.lockButton.connect('clicked', () => this._toggleDragLock());
+        headerRight.add(this.lockButton);
         
         this.descLabel = new St.Label({text: 'Laden...', style: 'font-size: 24px; color: #fff; margin-bottom: 8px;'});
         headerRight.add(this.descLabel);
@@ -345,7 +352,7 @@ class TuxWetterDesklet extends Desklet.Desklet {
         this.mainBox.add(statusBox);
         
         this.setContent(this.card);
-        this._draggable.inhibit = true;
+        this._draggable.inhibit = false;
         this.card.reactive = true;
         this.card.connect('scroll-event', (_actor, event) => {
             const direction = event.get_scroll_direction();
@@ -370,6 +377,8 @@ class TuxWetterDesklet extends Desklet.Desklet {
         this._settingsProcess = 0;
         this._locationFetchTimeout = 0;
         this._autoUpdateTimeout = 0;
+        this._lockAnimationTimeout = 0;
+        this._isLocked = false;
         this._locationIndex = -1;
         this._captureAppliedSettings();
     }
@@ -699,7 +708,6 @@ class TuxWetterDesklet extends Desklet.Desklet {
             return;
         }
         try {
-            this._draggable.inhibit = true;
             const argv = [
                 'xlet-settings',
                 'desklet',
@@ -717,9 +725,7 @@ class TuxWetterDesklet extends Desklet.Desklet {
                 null
             );
             this._settingsProcess = pid;
-            this._draggable.inhibit = false;
             GLib.child_watch_add(GLib.PRIORITY_DEFAULT, pid, () => {
-                this._draggable.inhibit = true;
                 this._settingsProcess = 0;
                 GLib.spawn_close_pid(pid);
                 return GLib.SOURCE_REMOVE;
@@ -727,8 +733,33 @@ class TuxWetterDesklet extends Desklet.Desklet {
         } catch (e) {
             global.logError('TuX-Wetter Einstellungen: ' + e);
             this._settingsProcess = 0;
-            this._draggable.inhibit = true;
         }
+    }
+
+    _toggleDragLock() {
+        this._isLocked = !this._isLocked;
+        this._draggable.inhibit = this._isLocked;
+        if (this._lockAnimationTimeout) {
+            GLib.source_remove(this._lockAnimationTimeout);
+            this._lockAnimationTimeout = 0;
+        }
+        let frame = 0;
+        const targetLabel = this._isLocked ? '🔒' : '🔓';
+        this._lockAnimationTimeout = GLib.timeout_add(GLib.PRIORITY_DEFAULT, 30, () => {
+            frame++;
+            const progress = frame / 8;
+            const scaleX = progress <= 0.5
+                ? 1 - progress * 1.8
+                : (progress - 0.5) * 1.8;
+            this.lockButton.set_scale(Math.max(0.1, scaleX), 1);
+            if (frame === 4) this.lockButton.set_label(targetLabel);
+            if (frame >= 8) {
+                this.lockButton.set_scale(1, 1);
+                this._lockAnimationTimeout = 0;
+                return GLib.SOURCE_REMOVE;
+            }
+            return GLib.SOURCE_CONTINUE;
+        });
     }
 
     on_location_search_pressed() {
@@ -1252,7 +1283,7 @@ class TuxWetterDesklet extends Desklet.Desklet {
     }
 
     on_desklet_added_to_desktop() {
-        this._draggable.inhibit = true;
+        this._draggable.inhibit = this._isLocked;
         this._onSettingsChanged();
         this._fetchData();
         this._autoUpdateTimeout = GLib.timeout_add(GLib.PRIORITY_DEFAULT, 1500, () => {
@@ -1264,6 +1295,10 @@ class TuxWetterDesklet extends Desklet.Desklet {
 
     on_desklet_removed() {
         this._draggable.inhibit = true;
+        if (this._lockAnimationTimeout) {
+            GLib.source_remove(this._lockAnimationTimeout);
+            this._lockAnimationTimeout = 0;
+        }
         if (this._timeout) {
             GLib.source_remove(this._timeout);
             this._timeout = 0;
