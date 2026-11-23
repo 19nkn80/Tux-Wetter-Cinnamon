@@ -6,9 +6,16 @@ Wetterwarnungen sowie optionale Luftqualitäts-, Pollen- und Monddaten.
 
 **TuX-Wetter 0.x ist ein Fork von Tux-Wetter-KDE von Mastertac.**
 
+## Neu in Version 0.3
+
+- Das animierte Schloss oben rechts sperrt oder erlaubt das Verschieben.
+  Es arbeitet unabhängig vom Einstellungsfenster.
+- Lange Ortsnamen werden vollständig angezeigt und bei Bedarf umgebrochen.
+- Die Update-Prüfung lädt zusammengehörige Dateien derselben GitHub-Revision.
+
 ## Voraussetzungen
 
-- Linux mit **Cinnamon 6.6 oder neuer**
+- Linux mit **Cinnamon 6.4 oder neuer**
 - funktionierendes Internet
 - `curl`
 - ein Wetterdienst ohne Registrierung:
