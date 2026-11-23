@@ -156,8 +156,8 @@ class TuxWetterDesklet extends Desklet.Desklet {
         });
         headerRight.set_width(320);
         this.lockButton = new St.Button({
-            label: '🔓 Offen',
-            style: 'font-size: 16px; padding: 3px 6px; margin-bottom: 4px;'
+            label: '🔓↻ Offen',
+            style: 'font-size: 19px; padding: 2px 6px; margin-bottom: 4px;'
         });
         this.lockButton.set_x_align(Clutter.ActorAlign.END);
         this.lockButton.connect('clicked', () => this._toggleDragLock());
@@ -744,7 +744,7 @@ class TuxWetterDesklet extends Desklet.Desklet {
             this._lockAnimationTimeout = 0;
         }
         let frame = 0;
-        const targetLabel = this._isLocked ? '🔒 Gesperrt' : '🔓 Offen';
+        const targetLabel = this._isLocked ? '🔒 Gesperrt' : '🔓↻ Offen';
         this._lockAnimationTimeout = GLib.timeout_add(GLib.PRIORITY_DEFAULT, 30, () => {
             frame++;
             const progress = frame / 8;
