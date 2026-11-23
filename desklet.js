@@ -1,16 +1,18 @@
 const St = imports.gi.St;
 const Clutter = imports.gi.Clutter;
+const Pango = imports.gi.Pango;
 const Gio = imports.gi.Gio;
 const Desklet = imports.ui.desklet;
 const GLib = imports.gi.GLib;
 const Main = imports.ui.main;
 const ModalDialog = imports.ui.modalDialog;
 const Settings = imports.ui.settings;
+const Tooltips = imports.ui.tooltips;
 
 const REPOSITORY = '19nkn80/Tux-Wetter-Cinnamon';
-const UPDATE_BRANCH = 'release-0.2';
+const UPDATE_BRANCH = 'GuideOS-1.1-Cinnamon-6.4.13';
 const RAW_BASE_URL = 'https://raw.githubusercontent.com/' + REPOSITORY + '/' + UPDATE_BRANCH + '/';
-const LOCAL_VERSION = '0.1';
+const LOCAL_VERSION = '0.3';
 const GRADIENT_STRIP_COUNT = 100;
 const CARD_WIDTH = 760;
 const CARD_HEIGHT = 730;
@@ -104,11 +106,58 @@ class TuxWetterDesklet extends Desklet.Desklet {
         });
         this.mainBox.set_x_expand(true);
         this.card.add_child(this.mainBox);
+
+        this.lockButton = new St.Button({
+            reactive: true,
+            can_focus: true,
+            style: 'padding: 0; margin: 12px 24px 0 0;'
+        });
+        this.lockButton.set_size(48, 50);
+        const lockDrawing = new St.Widget({layout_manager: new Clutter.FixedLayout()});
+        lockDrawing.set_size(48, 50);
+        this.lockShackle = new St.Widget({
+            style: 'border: 3px solid white; border-bottom-width: 0; border-radius: 10px 10px 0 0;'
+        });
+        this.lockShackle.set_position(12, 7);
+        this.lockShackle.set_size(22, 23);
+        this.lockShackle.set_pivot_point(0, 1);
+        lockDrawing.add_child(this.lockShackle);
+        const lockBody = new St.Widget({
+            style: 'border: 3px solid white; border-radius: 4px;'
+        });
+        lockBody.set_position(9, 25);
+        lockBody.set_size(28, 20);
+        lockDrawing.add_child(lockBody);
+        this.lockButton.set_child(lockDrawing);
+        this.lockTooltip = new Tooltips.Tooltip(this.lockButton, '');
+        this.lockButton.connect('button-press-event', (_actor, event) => {
+            if (event.get_button() !== 1) return Clutter.EVENT_PROPAGATE;
+            this._toggleMoveLock();
+            return Clutter.EVENT_STOP;
+        });
+        this.lockButton.connect('button-release-event', (_actor, event) =>
+            event.get_button() === 1 ? Clutter.EVENT_STOP : Clutter.EVENT_PROPAGATE
+        );
+        this.lockButton.connect('clicked', () => this._toggleMoveLock());
+        this.card.add_child(this.lockButton);
+        const lockLayout = this.card.layout_manager.get_child_meta(this.card, this.lockButton);
+        lockLayout.x_align = Clutter.BinAlignment.END;
+        lockLayout.y_align = Clutter.BinAlignment.START;
         
         const headerBox = new St.BoxLayout({
-            vertical: false,
+            vertical: true,
             style: 'margin-bottom: 12px; padding: 8px 4px; border-bottom: 1px solid rgba(255,255,255,0.24);'
         });
+        this.locationLabel = new St.Label({
+            text: 'Lüchow',
+            style: 'font-size: 38px; font-weight: 600; color: #fff; margin-bottom: 4px; margin-right: 80px;'
+        });
+        this.locationLabel.clutter_text.set_line_wrap(true);
+        this.locationLabel.clutter_text.set_line_wrap_mode(Pango.WrapMode.WORD_CHAR);
+        this.locationLabel.clutter_text.set_ellipsize(Pango.EllipsizeMode.NONE);
+        headerBox.add(this.locationLabel);
+
+        const headerContent = new St.BoxLayout({vertical: false});
         const headerLeft = new St.BoxLayout({vertical: true});
         headerLeft.set_width(320);
         const locationBar = new St.BoxLayout({
@@ -121,8 +170,6 @@ class TuxWetterDesklet extends Desklet.Desklet {
             return Clutter.EVENT_STOP;
         });
         locationBar.add(this.previousLocationButton);
-        this.locationLabel = new St.Label({text: 'Lüchow', style: 'font-size: 38px; font-weight: 600; color: #fff;'});
-        locationBar.add(this.locationLabel);
         this.nextLocationButton = new St.Button({label: '›', style: 'font-size: 48px; color: #ffffff; padding: 0 12px;'});
         this.nextLocationButton.connect('button-press-event', () => {
             this._cycleLocation(1);
@@ -146,11 +193,11 @@ class TuxWetterDesklet extends Desklet.Desklet {
         this.tempLabel = new St.Label({text: '--°', style: 'font-size: 78px; font-weight: 600; color: #fff;'});
         temperatureBox.add(this.tempLabel);
         headerLeft.add(temperatureBox);
-        headerBox.add(headerLeft);
+        headerContent.add(headerLeft);
         
         const headerRight = new St.BoxLayout({
             vertical: true,
-            style: 'margin-left: 10px; margin-top: 48px; padding-left: 10px;'
+            style: 'margin-left: 10px; padding-left: 10px;'
         });
         headerRight.set_width(320);
         
@@ -177,7 +224,8 @@ class TuxWetterDesklet extends Desklet.Desklet {
         this.todayRangeLabel = new St.Label({text: 'Heute: --° / --°', style: 'font-size: 16px; color: #e8e8e8; margin-top: 2px;'});
         headerRight.add(this.todayRangeLabel);
         
-        headerBox.add(headerRight);
+        headerContent.add(headerRight);
+        headerBox.add(headerContent);
         this.mainBox.add(headerBox);
         
         const hourlyBox = new St.BoxLayout({vertical: false, style: 'margin-bottom: 12px;'});
@@ -343,7 +391,11 @@ class TuxWetterDesklet extends Desklet.Desklet {
         this.mainBox.add(statusBox);
         
         this.setContent(this.card);
-        this._draggable.inhibit = true;
+        this._moveLocked = true;
+        this._deskletLockChangedId = global.settings.connect('changed::lock-desklets', () => {
+            this._syncMoveLock();
+        });
+        this._syncMoveLock();
         this.card.reactive = true;
         this.card.connect('scroll-event', (_actor, event) => {
             const direction = event.get_scroll_direction();
@@ -392,6 +444,7 @@ class TuxWetterDesklet extends Desklet.Desklet {
             this.curveLabel.visible = false;
             this.curveArea.visible = false;
         }
+
         this._applyAppearance();
         GLib.idle_add(GLib.PRIORITY_DEFAULT_IDLE, () => {
             this._fitCardToContent();
@@ -407,6 +460,35 @@ class TuxWetterDesklet extends Desklet.Desklet {
                 return false;
             }
         );
+    }
+
+    _updateMoveLockLabel() {
+        const label = global.settings.get_boolean('lock-desklets')
+            ? _('Verschieben durch Cinnamon gesperrt')
+            : this._moveLocked
+            ? _('Verschieben gesperrt – zum Entsperren klicken')
+            : _('Verschieben freigegeben – zum Sperren klicken');
+        this.lockButton.get_accessible().set_name(label);
+        this.lockTooltip.set_text(label);
+    }
+
+    _syncMoveLock() {
+        this._draggable.inhibit = this._moveLocked || global.settings.get_boolean('lock-desklets');
+        this._updateMoveLockLabel();
+        this.lockShackle.ease({
+            rotation_angle_z: this._draggable.inhibit ? 0 : -40,
+            duration: 250,
+            mode: Clutter.AnimationMode.EASE_OUT_CUBIC
+        });
+    }
+
+    _toggleMoveLock() {
+        if (global.settings.get_boolean('lock-desklets')) {
+            this._notify(_('Verschieben ist in den Cinnamon-Einstellungen gesperrt.'));
+            return;
+        }
+        this._moveLocked = !this._moveLocked;
+        this._syncMoveLock();
     }
 
     _getSavedLocationEntries() {
@@ -495,12 +577,7 @@ class TuxWetterDesklet extends Desklet.Desklet {
             'MET Norway / yr.no (kostenlos)': 'met-no'
         };
         const value = this.settings.getValue('weather-provider') || this.weatherProvider;
-        const normalized = labels[value] || value;
-        const storedLabel = Object.keys(labels).find((label) => labels[label] === normalized) || normalized;
-        if (storedLabel !== value) {
-            this.settings.setValue('weather-provider', storedLabel);
-        }
-        return normalized;
+        return labels[value] || value;
     }
 
     _normalizeColorThemeSetting() {
@@ -513,12 +590,7 @@ class TuxWetterDesklet extends Desklet.Desklet {
             'Schiefer': 'schiefer'
         };
         const value = this.settings.getValue('color-theme') || this.colorTheme;
-        const normalized = labels[value] || value;
-        const storedLabel = Object.keys(labels).find((label) => labels[label] === normalized) || normalized;
-        if (storedLabel !== value) {
-            this.settings.setValue('color-theme', storedLabel);
-        }
-        return normalized;
+        return labels[value] || value;
     }
 
     _hexToRgb(value) {
@@ -697,7 +769,6 @@ class TuxWetterDesklet extends Desklet.Desklet {
             return;
         }
         try {
-            this._draggable.inhibit = true;
             const argv = [
                 'xlet-settings',
                 'desklet',
@@ -715,9 +786,7 @@ class TuxWetterDesklet extends Desklet.Desklet {
                 null
             );
             this._settingsProcess = pid;
-            this._draggable.inhibit = false;
             GLib.child_watch_add(GLib.PRIORITY_DEFAULT, pid, () => {
-                this._draggable.inhibit = true;
                 this._settingsProcess = 0;
                 GLib.spawn_close_pid(pid);
                 return GLib.SOURCE_REMOVE;
@@ -725,7 +794,6 @@ class TuxWetterDesklet extends Desklet.Desklet {
         } catch (e) {
             global.logError('TuX-Wetter Einstellungen: ' + e);
             this._settingsProcess = 0;
-            this._draggable.inhibit = true;
         }
     }
 
@@ -833,11 +901,12 @@ class TuxWetterDesklet extends Desklet.Desklet {
 
     _fetchText(url) {
         const command = 'curl -fsSL --max-time 15 "' + url + '"';
-        const result = GLib.spawn_command_line_sync(command);
-        if (!result[0] || !result[1]) {
-            throw new Error('Download fehlgeschlagen');
+        const [success, output, error, status] = GLib.spawn_command_line_sync(command);
+        if (!success || status !== 0 || !output || output.length === 0) {
+            const details = error ? imports.byteArray.toString(error).trim() : '';
+            throw new Error('Download fehlgeschlagen' + (details ? ': ' + details : ''));
         }
-        return result[1].toString();
+        return imports.byteArray.toString(output);
     }
 
     _fetchMoon() {
@@ -1250,7 +1319,7 @@ class TuxWetterDesklet extends Desklet.Desklet {
     }
 
     on_desklet_added_to_desktop() {
-        this._draggable.inhibit = true;
+        this._syncMoveLock();
         this._onSettingsChanged();
         this._fetchData();
         this._autoUpdateTimeout = GLib.timeout_add(GLib.PRIORITY_DEFAULT, 1500, () => {
@@ -1262,6 +1331,10 @@ class TuxWetterDesklet extends Desklet.Desklet {
 
     on_desklet_removed() {
         this._draggable.inhibit = true;
+        if (this._deskletLockChangedId) {
+            global.settings.disconnect(this._deskletLockChangedId);
+            this._deskletLockChangedId = 0;
+        }
         if (this._timeout) {
             GLib.source_remove(this._timeout);
             this._timeout = 0;

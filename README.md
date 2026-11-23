@@ -35,7 +35,7 @@ sudo apt install curl
 
 ## Installation über die Cinnamon-Oberfläche
 
-1. Lade `Tux-Wetter-Cinnamon-0.2.zip` herunter.
+1. Lade `Tux-Wetter-Cinnamon-0.3.zip` herunter.
 2. Öffne **Systemeinstellungen → Desklets**.
 3. Öffne das Menü **Hinzufügen** beziehungsweise **Aus Datei installieren**.
 4. Wähle die ZIP-Datei aus.
@@ -52,7 +52,7 @@ Wenn deine Cinnamon-Version keinen Dateiimport anbietet:
 
 ```bash
 mkdir -p ~/.local/share/cinnamon/desklets
-unzip Tux-Wetter-Cinnamon-0.2.zip -d ~/.local/share/cinnamon/desklets
+unzip Tux-Wetter-Cinnamon-0.3.zip -d ~/.local/share/cinnamon/desklets
 ```
 
 Danach **Systemeinstellungen → Desklets** öffnen, TuX-Wetter aktivieren und
@@ -69,8 +69,14 @@ auf dem Desktop platzieren.
 6. Mit **Abbrechen** werden die zuletzt übernommenen Einstellungen
    wiederhergestellt.
 
-Die Pfeile neben dem Ortsnamen wechseln zwischen gespeicherten Orten.
+Die Pfeile unter dem Ortsnamen wechseln zwischen gespeicherten Orten.
 Zusätzlich funktionieren Mausrad und rechte Maustaste am Desklet.
+
+Das Schloss oben rechts schaltet die Verschiebesperre um: Geschlossen ist das
+Desklet gesperrt, geöffnet lässt es sich ziehen. Beim Start ist es gesperrt;
+das Öffnen oder Schließen der Einstellungen ändert die Sperre nicht.
+Ist in Cinnamon die globale Desklet-Sperre aktiv, muss sie zuerst aufgehoben
+werden.
 
 ## Funktionen
 
@@ -91,8 +97,8 @@ Zusätzlich funktionieren Mausrad und rechte Maustaste am Desklet.
 In den Optionen gibt es zusätzlich **Auf Updates prüfen**. Wenn GitHub eine
 höhere Version meldet, erscheint zuerst ein Hinweis und danach ein Dialog mit
 **Updaten** und **Abbrechen**. Beim Updaten werden die drei Desklet-Dateien
-aus dem GitHub-Updatezweig geladen; Cinnamon muss anschließend neu geladen
-werden.
+aus dem GitHub-Zweig `GuideOS-1.1-Cinnamon-6.4.13` geladen; Cinnamon muss
+anschließend neu geladen werden.
 
 Beim Start prüft das Desklet automatisch, ob auf GitHub eine neuere Version
 vorliegt. Die aktuell installierte Version wird oben im Desklet angezeigt.
