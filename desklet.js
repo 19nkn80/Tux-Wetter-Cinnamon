@@ -8,9 +8,9 @@ const ModalDialog = imports.ui.modalDialog;
 const Settings = imports.ui.settings;
 
 const REPOSITORY = '19nkn80/Tux-Wetter-Cinnamon';
-const UPDATE_BRANCH = 'release-0.2';
+const UPDATE_BRANCH = 'v0.3';
 const RAW_BASE_URL = 'https://raw.githubusercontent.com/' + REPOSITORY + '/' + UPDATE_BRANCH + '/';
-const LOCAL_VERSION = '0.1';
+const LOCAL_VERSION = '0.2';
 const GRADIENT_STRIP_COUNT = 100;
 const CARD_WIDTH = 760;
 const CARD_HEIGHT = 730;
@@ -110,34 +110,36 @@ class TuxWetterDesklet extends Desklet.Desklet {
             style: 'margin-bottom: 12px; padding: 8px 4px; border-bottom: 1px solid rgba(255,255,255,0.24);'
         });
         const headerLeft = new St.BoxLayout({vertical: true});
-        headerLeft.set_width(320);
+        headerLeft.set_width(380);
         const locationBar = new St.BoxLayout({
-            vertical: false,
+            vertical: true,
             style: 'margin-bottom: 2px; padding: 1px 2px;'
         });
+        this.locationLabel = new St.Label({text: 'Lüchow', style: 'font-size: 36px; font-weight: 600; color: #fff;'});
+        locationBar.add(this.locationLabel);
+        const locationControls = new St.BoxLayout({vertical: false});
         this.previousLocationButton = new St.Button({label: '‹', style: 'font-size: 48px; color: #ffffff; padding: 0 12px;'});
         this.previousLocationButton.connect('button-press-event', () => {
             this._cycleLocation(-1);
             return Clutter.EVENT_STOP;
         });
-        locationBar.add(this.previousLocationButton);
-        this.locationLabel = new St.Label({text: 'Lüchow', style: 'font-size: 38px; font-weight: 600; color: #fff;'});
-        locationBar.add(this.locationLabel);
+        locationControls.add(this.previousLocationButton);
         this.nextLocationButton = new St.Button({label: '›', style: 'font-size: 48px; color: #ffffff; padding: 0 12px;'});
         this.nextLocationButton.connect('button-press-event', () => {
             this._cycleLocation(1);
             return Clutter.EVENT_STOP;
         });
-        locationBar.add(this.nextLocationButton);
+        locationControls.add(this.nextLocationButton);
         this.settingsButton = new St.Button({label: '⚙', style: 'font-size: 38px; color: #ffffff; padding: 0 12px;'});
         this.settingsButton.connect('clicked', () => this.configureDesklet());
-        locationBar.add(this.settingsButton);
+        locationControls.add(this.settingsButton);
         this.refreshButton = new St.Button({label: '↻', style: 'font-size: 34px; color: #ffffff; padding: 0 10px;'});
         this.refreshButton.connect('button-press-event', () => {
             this.on_refresh_pressed();
             return Clutter.EVENT_STOP;
         });
-        locationBar.add(this.refreshButton);
+        locationControls.add(this.refreshButton);
+        locationBar.add(locationControls);
         headerLeft.add(locationBar);
         
         const temperatureBox = new St.BoxLayout({vertical: false, style: 'margin-top: 4px;'});
@@ -153,6 +155,15 @@ class TuxWetterDesklet extends Desklet.Desklet {
             style: 'margin-left: 10px; margin-top: 48px; padding-left: 10px;'
         });
         headerRight.set_width(320);
+        this.lockButton = new St.Button({style: 'padding: 2px 6px; margin-bottom: 4px;'});
+        this.lockButton.set_x_align(Clutter.ActorAlign.END);
+        this.lockIcon = new St.DrawingArea();
+        this.lockIcon.set_width(34);
+        this.lockIcon.set_height(34);
+        this.lockIcon.connect('repaint', () => this._drawLockIcon());
+        this.lockButton.set_child(this.lockIcon);
+        this.lockButton.connect('clicked', () => this._toggleDragLock());
+        headerRight.add(this.lockButton);
         
         this.descLabel = new St.Label({text: 'Laden...', style: 'font-size: 24px; color: #fff; margin-bottom: 8px;'});
         headerRight.add(this.descLabel);
@@ -343,7 +354,7 @@ class TuxWetterDesklet extends Desklet.Desklet {
         this.mainBox.add(statusBox);
         
         this.setContent(this.card);
-        this._draggable.inhibit = true;
+        this._draggable.inhibit = false;
         this.card.reactive = true;
         this.card.connect('scroll-event', (_actor, event) => {
             const direction = event.get_scroll_direction();
@@ -368,6 +379,8 @@ class TuxWetterDesklet extends Desklet.Desklet {
         this._settingsProcess = 0;
         this._locationFetchTimeout = 0;
         this._autoUpdateTimeout = 0;
+        this._lockAnimationTimeout = 0;
+        this._isLocked = false;
         this._locationIndex = -1;
         this._captureAppliedSettings();
     }
@@ -697,7 +710,6 @@ class TuxWetterDesklet extends Desklet.Desklet {
             return;
         }
         try {
-            this._draggable.inhibit = true;
             const argv = [
                 'xlet-settings',
                 'desklet',
@@ -715,9 +727,7 @@ class TuxWetterDesklet extends Desklet.Desklet {
                 null
             );
             this._settingsProcess = pid;
-            this._draggable.inhibit = false;
             GLib.child_watch_add(GLib.PRIORITY_DEFAULT, pid, () => {
-                this._draggable.inhibit = true;
                 this._settingsProcess = 0;
                 GLib.spawn_close_pid(pid);
                 return GLib.SOURCE_REMOVE;
@@ -725,8 +735,62 @@ class TuxWetterDesklet extends Desklet.Desklet {
         } catch (e) {
             global.logError('TuX-Wetter Einstellungen: ' + e);
             this._settingsProcess = 0;
-            this._draggable.inhibit = true;
         }
+    }
+
+    _toggleDragLock() {
+        this._isLocked = !this._isLocked;
+        this._draggable.inhibit = this._isLocked;
+        if (this._lockAnimationTimeout) {
+            GLib.source_remove(this._lockAnimationTimeout);
+            this._lockAnimationTimeout = 0;
+        }
+        let frame = 0;
+        this._lockAnimationTimeout = GLib.timeout_add(GLib.PRIORITY_DEFAULT, 30, () => {
+            frame++;
+            const progress = frame / 8;
+            const scaleX = progress <= 0.5
+                ? 1 - progress * 1.8
+                : (progress - 0.5) * 1.8;
+            this.lockButton.set_scale(Math.max(0.1, scaleX), 1);
+            if (frame === 4) this.lockIcon.queue_repaint();
+            if (frame >= 8) {
+                this.lockButton.set_scale(1, 1);
+                this._lockAnimationTimeout = 0;
+                return GLib.SOURCE_REMOVE;
+            }
+            return GLib.SOURCE_CONTINUE;
+        });
+    }
+
+    _drawLockIcon() {
+        const cr = this.lockIcon.get_context();
+        cr.setLineWidth(3);
+        cr.setLineCap(1);
+        cr.setSourceRGBA(1, 1, 1, 1);
+
+        cr.rectangle(8, 15, 18, 14);
+        cr.stroke();
+        cr.moveTo(15, 22);
+        cr.arc(17, 22, 2, 0, Math.PI * 2);
+        cr.stroke();
+        cr.moveTo(17, 24);
+        cr.lineTo(17, 27);
+        cr.stroke();
+
+        if (this._isLocked) {
+            cr.moveTo(11, 15);
+            cr.lineTo(11, 10);
+            cr.curveTo(11, 2, 23, 2, 23, 10);
+            cr.lineTo(23, 15);
+        } else {
+            cr.moveTo(23, 15);
+            cr.lineTo(23, 10);
+            cr.curveTo(23, 5, 29, 5, 29, 10);
+            cr.lineTo(29, 13);
+        }
+        cr.stroke();
+        cr.$dispose();
     }
 
     on_location_search_pressed() {
@@ -1250,7 +1314,7 @@ class TuxWetterDesklet extends Desklet.Desklet {
     }
 
     on_desklet_added_to_desktop() {
-        this._draggable.inhibit = true;
+        this._draggable.inhibit = this._isLocked;
         this._onSettingsChanged();
         this._fetchData();
         this._autoUpdateTimeout = GLib.timeout_add(GLib.PRIORITY_DEFAULT, 1500, () => {
@@ -1262,6 +1326,10 @@ class TuxWetterDesklet extends Desklet.Desklet {
 
     on_desklet_removed() {
         this._draggable.inhibit = true;
+        if (this._lockAnimationTimeout) {
+            GLib.source_remove(this._lockAnimationTimeout);
+            this._lockAnimationTimeout = 0;
+        }
         if (this._timeout) {
             GLib.source_remove(this._timeout);
             this._timeout = 0;

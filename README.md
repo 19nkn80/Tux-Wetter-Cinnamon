@@ -6,6 +6,14 @@ Wetterwarnungen sowie optionale Luftqualitäts-, Pollen- und Monddaten.
 
 **TuX-Wetter 0.x ist ein Fork von Tux-Wetter-KDE von Mastertac.**
 
+## Version 0.3
+
+- Verschieben lässt sich direkt über ein Schloss im Desklet sperren und
+  entsperren.
+- Das Schloss zeigt den Zustand als weiße Kontur und animiert beim Umschalten.
+- Das Optionenfenster verändert den Verschiebezustand nicht mehr automatisch.
+- Die Versionsanzeige und das Installationspaket wurden auf `0.3` aktualisiert.
+
 ## Voraussetzungen
 
 - Linux mit **Cinnamon 6.6 oder neuer**
@@ -35,7 +43,7 @@ sudo apt install curl
 
 ## Installation über die Cinnamon-Oberfläche
 
-1. Lade `Tux-Wetter-Cinnamon-0.2.zip` herunter.
+1. Lade `Tux-Wetter-Cinnamon-0.3.zip` herunter.
 2. Öffne **Systemeinstellungen → Desklets**.
 3. Öffne das Menü **Hinzufügen** beziehungsweise **Aus Datei installieren**.
 4. Wähle die ZIP-Datei aus.
@@ -52,7 +60,7 @@ Wenn deine Cinnamon-Version keinen Dateiimport anbietet:
 
 ```bash
 mkdir -p ~/.local/share/cinnamon/desklets
-unzip Tux-Wetter-Cinnamon-0.2.zip -d ~/.local/share/cinnamon/desklets
+unzip Tux-Wetter-Cinnamon-0.3.zip -d ~/.local/share/cinnamon/desklets
 ```
 
 Danach **Systemeinstellungen → Desklets** öffnen, TuX-Wetter aktivieren und
