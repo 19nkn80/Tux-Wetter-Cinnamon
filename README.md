@@ -6,17 +6,19 @@ Wetterwarnungen sowie optionale Luftqualitäts-, Pollen- und Monddaten.
 
 **TuX-Wetter 0.x ist ein Fork von Tux-Wetter-KDE von Mastertac.**
 
-## Version 0.3
+## Version 0.4
 
-- Verschieben lässt sich direkt über ein Schloss im Desklet sperren und
-  entsperren.
-- Das Schloss zeigt den Zustand als weiße Kontur und animiert beim Umschalten.
-- Das Optionenfenster verändert den Verschiebezustand nicht mehr automatisch.
-- Die Versionsanzeige und das Installationspaket wurden auf `0.3` aktualisiert.
+- Die Tagesübersicht listet die fünf Wochentage ab morgen; der aktuelle Tag
+  wird bereits oben im Desklet angezeigt.
+- Die Wochentage werden dynamisch berechnet und vollständig ausgeschrieben.
+- Die Spalte für Tagesnamen ist verbreitert, damit auch „Donnerstag“ lesbar ist.
+- Das Verschiebeschloss und die Optionen zum Sperren und Entsperren bleiben
+  verfügbar.
 
 ## Voraussetzungen
 
 - Linux mit **Cinnamon 6.6.x**
+- getestet mit **Linux Mint 22.3 und Cinnamon 6.6.9** sowie LMDE 7
 - funktionierendes Internet
 - `curl`
 - ein Wetterdienst ohne Registrierung:
@@ -99,11 +101,31 @@ Zusätzlich funktionieren Mausrad und rechte Maustaste am Desklet.
 In den Optionen gibt es zusätzlich **Auf Updates prüfen**. Wenn GitHub eine
 höhere Version meldet, erscheint zuerst ein Hinweis und danach ein Dialog mit
 **Updaten** und **Abbrechen**. Beim Updaten werden die drei Desklet-Dateien
-aus dem GitHub-Updatezweig geladen; Cinnamon muss anschließend neu geladen
+aus dem GitHub-Updatezweig geladen. Cinnamon muss anschließend neu geladen
 werden.
 
 Beim Start prüft das Desklet automatisch, ob auf GitHub eine neuere Version
 vorliegt. Die aktuell installierte Version wird oben im Desklet angezeigt.
+
+### Bekannter Fehler in Version 0.4
+
+Der Updater von Version 0.4 fragt noch den Git-Tag `v0.3` ab. Dieser enthält
+weiterhin Version 0.3; dadurch kann Version 0.4 ein Update nicht erkennen.
+Das betrifft Mint 22.3 ebenso wie andere Distributionen mit Cinnamon 6.6 und
+ist kein spezielles Mint-Problem.
+
+Bis der Updater in einer neueren Version korrigiert ist, installiere die
+aktuellen Dateien manuell. Das ersetzt keine persönlichen Desklet-Einstellungen:
+
+```bash
+curl -fL https://github.com/19nkn80/Tux-Wetter-Cinnamon/archive/refs/heads/main.zip \
+  -o /tmp/tux-wetter-main.zip
+unzip -o /tmp/tux-wetter-main.zip -d /tmp
+mkdir -p ~/.local/share/cinnamon/desklets/tux-wetter@cinnamon-desklet
+cp /tmp/Tux-Wetter-Cinnamon-main/{desklet.js,metadata.json,settings-schema.json} \
+  ~/.local/share/cinnamon/desklets/tux-wetter@cinnamon-desklet/
+cinnamon --replace &
+```
 
 ## Fehlerbehebung
 
@@ -133,6 +155,35 @@ Cinnamon-Fehler ansehen:
 
 ```bash
 journalctl --user -b --no-pager | grep -i cinnamon
+```
+
+### Die 5-Tage-Übersicht zeigt „Heute“, falsche Tage oder abgeschnittene Namen
+
+Die Liste enthält nur die fünf Tage ab morgen. „Heute“ steht bereits im
+aktuellen Wetterbereich oben im Desklet. Die Wochentage werden anhand des
+Systemdatums berechnet. Prüfe, ob die Versionsanzeige **TuX-Wetter 0.4**
+meldet. Bei einer älteren Installation werden die Änderungen der
+5-Tage-Ansicht noch nicht verwendet. Aktualisiere die Dateien manuell wie im
+Abschnitt [Aktualisierung](#aktualisierung) beschrieben und lade Cinnamon neu.
+
+**Bekannter Fehler in Version 0.4:** Wenn die Wochentagsnamen stimmen, die
+angezeigten Wetterwerte aber zum vorherigen Tag gehören, liegt das an einer
+versetzten Zuordnung der Vorhersagedaten. Das ist kein Mint-22.3-Problem.
+Eine erneute Installation derselben Version 0.4 behebt es nicht; dafür ist
+eine korrigierte Desklet-Version erforderlich.
+
+### Die Updateprüfung findet kein Update oder das Update schlägt fehl
+
+In Version 0.4 ist die automatische Updateprüfung wegen des veralteten
+Update-Tags nicht zuverlässig; siehe [Bekannter Fehler in Version
+0.4](#bekannter-fehler-in-version-04). Installiere die aktuellen Dateien
+manuell über den dort beschriebenen Weg. Bei manuellen Netzwerkfehlern prüfe
+die Verbindung und ob `curl` sowie `unzip` verfügbar sind:
+
+```bash
+command -v curl
+command -v unzip
+curl -I https://github.com
 ```
 
 ### Einstellungen oder Darstellung sind veraltet
