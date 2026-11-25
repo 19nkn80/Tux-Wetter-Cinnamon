@@ -10,10 +10,22 @@ const Settings = imports.ui.settings;
 const REPOSITORY = '19nkn80/Tux-Wetter-Cinnamon';
 const UPDATE_BRANCH = 'v0.3';
 const RAW_BASE_URL = 'https://raw.githubusercontent.com/' + REPOSITORY + '/' + UPDATE_BRANCH + '/';
-const LOCAL_VERSION = '0.2';
+const LOCAL_VERSION = '0.4';
 const GRADIENT_STRIP_COUNT = 100;
 const CARD_WIDTH = 760;
 const CARD_HEIGHT = 730;
+
+function getNextDayLabels() {
+    const today = new Date();
+    const dayNames = ['Sonntag', 'Montag', 'Dienstag', 'Mittwoch', 'Donnerstag', 'Freitag', 'Samstag'];
+    const labels = [];
+    for (let i = 1; i < 6; i++) {
+        const date = new Date(today);
+        date.setDate(date.getDate() + i);
+        labels.push(dayNames[date.getDay()]);
+    }
+    return labels;
+}
 
 class TuxWetterDesklet extends Desklet.Desklet {
     constructor(metadata, desklet_id) {
@@ -265,7 +277,7 @@ class TuxWetterDesklet extends Desklet.Desklet {
         });
         this.dailyBox = dailyBox;
         this.dailyLabels = [];
-        const days = ['Heute', 'Morgen', 'Sa', 'So', 'Mo'];
+        const days = getNextDayLabels();
         for (let i = 0; i < 5; i++) {
             const d = new St.BoxLayout({
                 vertical: false,
@@ -276,7 +288,7 @@ class TuxWetterDesklet extends Desklet.Desklet {
                 this._showDayCurve(i);
                 return Clutter.EVENT_STOP;
             });
-            const dn = new St.Label({text: days[i], style: 'font-size: 21px; color: #eee; width: 105px;'});
+            const dn = new St.Label({text: days[i], style: 'font-size: 21px; color: #eee; width: 150px;'});
             d.add(dn);
             const dic = new St.Label({text: '☁️', style: 'font-size: 27px; width: 50px;'});
             d.add(dic);
