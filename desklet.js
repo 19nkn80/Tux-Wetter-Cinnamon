@@ -366,9 +366,13 @@ class TuxWetterDesklet extends Desklet.Desklet {
             style: 'font-size: 18px; color: rgba(255,255,255,0.78);'
         });
         forkBox.add(this.forkLabel);
-        const mastertacLink = new St.Button({
-            label: 'Mastertac',
+        const mastertacLabel = new St.Label({
             style: 'font-size: 18px; color: #a9d8ff;',
+        });
+        mastertacLabel.clutter_text.set_markup('<u>Mastertac</u>');
+        const mastertacLink = new St.Button({
+            child: mastertacLabel,
+            style: 'padding: 3px 6px;',
             can_focus: true,
         });
         mastertacLink.connect('button-press-event', (_actor, event) => {
