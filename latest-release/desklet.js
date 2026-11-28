@@ -371,13 +371,15 @@ class TuxWetterDesklet extends Desklet.Desklet {
             style: 'font-size: 18px; color: #a9d8ff;',
             can_focus: true,
         });
-        mastertacLink.connect('clicked', () => {
+        mastertacLink.connect('button-press-event', (_actor, event) => {
+            if (event.get_button() !== 1) return Clutter.EVENT_PROPAGATE;
             try {
                 Gio.AppInfo.launch_default_for_uri('https://github.com/Mastertac2000/tux-wetter/releases', null);
             } catch (e) {
                 global.logError('TuX-Wetter Link: ' + e);
                 this._notify(_('Link konnte nicht geöffnet werden.'));
             }
+            return Clutter.EVENT_STOP;
         });
         forkBox.add(mastertacLink);
         statusLeft.add(forkBox);
