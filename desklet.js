@@ -358,9 +358,13 @@ class TuxWetterDesklet extends Desklet.Desklet {
             style: 'font-size: 18px; color: rgba(255,255,255,0.78);'
         });
         forkBox.add(this.forkLabel);
+        const mastertacLabel = new St.Label({
+            style: 'font-size: 18px; color: #a9d8ff;'
+        });
+        mastertacLabel.clutter_text.set_markup('<u>Mastertac</u>');
         const mastertacLink = new St.Button({
-            label: 'Mastertac',
-            style: 'font-size: 18px; color: rgba(255,255,255,0.78); padding: 0;'
+            child: mastertacLabel,
+            style: 'padding: 0;'
         });
         mastertacLink.connect('clicked', () => {
             imports.misc.util.spawnCommandLine('xdg-open https://github.com/Mastertac2000/tux-wetter/releases');
