@@ -1,0 +1,192 @@
+{
+  "location": {
+    "type": "entry",
+    "default": "52.9667,11.15",
+    "description": "GPS: Breitengrad,Längengrad (z. B. 52.52,13.405)"
+  },
+  "location-name": {
+    "type": "entry",
+    "default": "Lüchow",
+    "description": "Anzeigename (z. B. Berlin)"
+  },
+  "location-search": {
+    "type": "entry",
+    "default": "Lüchow",
+    "description": "Ort suchen"
+  },
+  "search-location": {
+    "type": "button",
+    "description": "Standort suchen und speichern",
+    "callback": "on_location_search_pressed"
+  },
+  "auto-location": {
+    "type": "button",
+    "description": "Standort automatisch über IP bestimmen",
+    "callback": "on_auto_location_pressed"
+  },
+  "saved-locations": {
+    "type": "list",
+    "description": "Gespeicherte Orte",
+    "columns": [
+      {"id": "name", "title": "Ort", "type": "string"},
+      {"id": "coordinates", "title": "Koordinaten", "type": "string"}
+    ],
+    "default": [
+      {"name": "Lüchow", "coordinates": "52.9667,11.15"}
+    ]
+  },
+  "weather-provider": {
+    "type": "combobox",
+    "default": "open-meteo",
+    "options": {
+      "Open-Meteo (kostenlos)": "open-meteo",
+      "wttr.in (kostenlos)": "wttr-in",
+      "MET Norway / yr.no (kostenlos)": "met-no"
+    },
+    "description": "Wetterdienst auswählen"
+  },
+  "color-theme": {
+    "type": "combobox",
+    "default": "nacht",
+    "options": {
+      "Nachtblau": "nacht",
+      "Violett": "violett",
+      "Ozean": "ozean",
+      "Smaragd": "smaragd",
+      "Sonnenuntergang": "sonnenuntergang",
+      "Schiefer": "schiefer"
+    },
+    "description": "Farbverlauf auswählen"
+  },
+  "temperature-unit": {
+    "type": "combobox",
+    "default": "celsius",
+    "options": {
+      "celsius": "°C (Celsius)",
+      "fahrenheit": "°F (Fahrenheit)"
+    },
+    "description": "Temperatureinheit"
+  },
+  "wind-unit": {
+    "type": "combobox",
+    "default": "kmh",
+    "options": {
+      "kmh": "km/h",
+      "ms": "m/s",
+      "mph": "mph"
+    },
+    "description": "Windeinheit"
+  },
+  "update-interval": {
+    "type": "spinbutton",
+    "default": 30,
+    "min": 5,
+    "max": 60,
+    "step": 5,
+    "units": "Minuten",
+    "description": "Aktualisierungsintervall"
+  },
+  "refresh-now": {
+    "type": "button",
+    "description": "Wetterdaten jetzt aktualisieren",
+    "callback": "on_refresh_pressed"
+  },
+  "show-humidity": {
+    "type": "checkbox",
+    "default": true,
+    "description": "Luftfeuchtigkeit anzeigen"
+  },
+  "show-pressure": {
+    "type": "checkbox",
+    "default": true,
+    "description": "Luftdruck anzeigen"
+  },
+  "show-uv-index": {
+    "type": "checkbox",
+    "default": true,
+    "description": "UV-Index anzeigen"
+  },
+  "show-precipitation": {
+    "type": "checkbox",
+    "default": true,
+    "description": "Niederschlagswahrscheinlichkeit anzeigen"
+  },
+  "show-sunrise-sunset": {
+    "type": "checkbox",
+    "default": true,
+    "description": "Sonnenauf- und -untergang anzeigen"
+  },
+  "show-air-quality": {
+    "type": "checkbox",
+    "default": true,
+    "description": "Luftqualität anzeigen"
+  },
+  "show-pollen": {
+    "type": "checkbox",
+    "default": true,
+    "description": "Pollenbelastung anzeigen"
+  },
+  "show-moon": {
+    "type": "checkbox",
+    "default": true,
+    "description": "Mondphase und Mondzeiten anzeigen"
+  },
+  "show-warnings": {
+    "type": "checkbox",
+    "default": true,
+    "description": "Amtliche Wetterwarnungen anzeigen"
+  },
+  "show-temperature-curve": {
+    "type": "checkbox",
+    "default": true,
+    "description": "Temperaturkurve beim Anklicken eines Tages anzeigen"
+  },
+  "compact-mode": {
+    "type": "checkbox",
+    "default": false,
+    "description": "Kompakte Darstellung (weniger Daten)"
+  },
+  "text-color": {
+    "type": "colorchooser",
+    "default": "#ffffff",
+    "description": "Textfarbe"
+  },
+  "bg-color": {
+    "type": "colorchooser",
+    "default": "#1a1a1a",
+    "description": "Hintergrundfarbe"
+  },
+  "opacity": {
+    "type": "spinbutton",
+    "default": 100,
+    "min": 0,
+    "max": 100,
+    "step": 10,
+    "units": "%",
+    "description": "Deckkraft des Hintergrunds"
+  },
+  "desklet-scale": {
+    "type": "spinbutton",
+    "default": 72,
+    "min": 50,
+    "max": 100,
+    "step": 5,
+    "units": "%",
+    "description": "Größe des Desklets"
+  },
+  "check-update": {
+    "type": "button",
+    "description": "Auf Updates prüfen",
+    "callback": "on_check_update_pressed"
+  },
+  "save-settings": {
+    "type": "button",
+    "description": "Speichern und übernehmen",
+    "callback": "on_save_settings_pressed"
+  },
+  "cancel-settings": {
+    "type": "button",
+    "description": "Abbrechen",
+    "callback": "on_cancel_settings_pressed"
+  }
+}
