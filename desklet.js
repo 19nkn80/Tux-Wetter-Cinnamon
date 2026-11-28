@@ -8,9 +8,8 @@ const ModalDialog = imports.ui.modalDialog;
 const Settings = imports.ui.settings;
 
 const REPOSITORY = '19nkn80/Tux-Wetter-Cinnamon';
-const UPDATE_BRANCH = 'v0.3';
-const RAW_BASE_URL = 'https://raw.githubusercontent.com/' + REPOSITORY + '/' + UPDATE_BRANCH + '/';
-const LOCAL_VERSION = '0.4';
+const RAW_BASE_URL = 'https://raw.githubusercontent.com/' + REPOSITORY + '/main/latest-release/';
+const LOCAL_VERSION = '0.5';
 const GRADIENT_STRIP_COUNT = 100;
 const CARD_WIDTH = 760;
 const CARD_HEIGHT = 730;
@@ -25,6 +24,18 @@ function getNextDayLabels() {
         labels.push(dayNames[date.getDay()]);
     }
     return labels;
+}
+
+function compareVersions(left, right) {
+    if (!/^\d+(\.\d+)*$/.test(left) || !/^\d+(\.\d+)*$/.test(right))
+        throw new Error('Ungültige Versionsnummer');
+    const leftParts = left.split('.').map(Number);
+    const rightParts = right.split('.').map(Number);
+    for (let i = 0; i < Math.max(leftParts.length, rightParts.length); i++) {
+        const difference = (leftParts[i] || 0) - (rightParts[i] || 0);
+        if (difference !== 0) return difference;
+    }
+    return 0;
 }
 
 class TuxWetterDesklet extends Desklet.Desklet {
@@ -83,7 +94,7 @@ class TuxWetterDesklet extends Desklet.Desklet {
         this.settings.bind('desklet-scale', 'scalePercent', this._onSettingsChanged.bind(this));
         this._normalizeColorThemeSetting();
         this._normalizeWeatherProviderSetting();
-        
+
         this.card = new St.Widget({
             layout_manager: new Clutter.BinLayout(),
             style: 'background-color: transparent;'
@@ -116,7 +127,7 @@ class TuxWetterDesklet extends Desklet.Desklet {
         });
         this.mainBox.set_x_expand(true);
         this.card.add_child(this.mainBox);
-        
+
         const headerBox = new St.BoxLayout({
             vertical: false,
             style: 'margin-bottom: 12px; padding: 8px 4px; border-bottom: 1px solid rgba(255,255,255,0.24);'
@@ -153,7 +164,7 @@ class TuxWetterDesklet extends Desklet.Desklet {
         locationControls.add(this.refreshButton);
         locationBar.add(locationControls);
         headerLeft.add(locationBar);
-        
+
         const temperatureBox = new St.BoxLayout({vertical: false, style: 'margin-top: 4px;'});
         this.currentIcon = new St.Label({text: '☀️', style: 'font-size: 58px; margin: 4px 16px 0 0;'});
         temperatureBox.add(this.currentIcon);
@@ -161,7 +172,7 @@ class TuxWetterDesklet extends Desklet.Desklet {
         temperatureBox.add(this.tempLabel);
         headerLeft.add(temperatureBox);
         headerBox.add(headerLeft);
-        
+
         const headerRight = new St.BoxLayout({
             vertical: true,
             style: 'margin-left: 10px; margin-top: 48px; padding-left: 10px;'
@@ -176,7 +187,7 @@ class TuxWetterDesklet extends Desklet.Desklet {
         this.lockButton.set_child(this.lockIcon);
         this.lockButton.connect('clicked', () => this._toggleDragLock());
         headerRight.add(this.lockButton);
-        
+
         this.descLabel = new St.Label({text: 'Laden...', style: 'font-size: 24px; color: #fff; margin-bottom: 8px;'});
         headerRight.add(this.descLabel);
         this.providerLabel = new St.Label({
@@ -194,15 +205,15 @@ class TuxWetterDesklet extends Desklet.Desklet {
         this.pressureLabel = new St.Label({text: 'Druck: -- hPa', style: 'font-size: 15px; color: #d0d0d0; margin-bottom: 3px;'});
         metricsBox.add(this.pressureLabel);
         headerRight.add(metricsBox);
-        
+
         this.feelsLabel = new St.Label({text: 'Gefühlt: --°C', style: 'font-size: 16px; color: #e8e8e8; margin-top: 8px;'});
         headerRight.add(this.feelsLabel);
         this.todayRangeLabel = new St.Label({text: 'Heute: --° / --°', style: 'font-size: 16px; color: #e8e8e8; margin-top: 2px;'});
         headerRight.add(this.todayRangeLabel);
-        
+
         headerBox.add(headerRight);
         this.mainBox.add(headerBox);
-        
+
         const hourlyBox = new St.BoxLayout({vertical: false, style: 'margin-bottom: 12px;'});
         hourlyBox.set_x_expand(true);
         this.hourlyBox = hourlyBox;
@@ -226,7 +237,7 @@ class TuxWetterDesklet extends Desklet.Desklet {
             this.hourlyLabels.push({t, ic, te});
         }
         this.mainBox.add(hourlyBox);
-        
+
         const infoBox = new St.BoxLayout({
             vertical: true,
             style: 'margin-bottom: 10px; padding: 6px 0; border-top: 1px solid rgba(255,255,255,0.18); border-bottom: 1px solid rgba(255,255,255,0.18);'
@@ -270,7 +281,7 @@ class TuxWetterDesklet extends Desklet.Desklet {
         });
         this.warningLabel.visible = false;
         this.mainBox.add(this.warningLabel);
-        
+
         const dailyBox = new St.BoxLayout({
             vertical: true,
             style: 'border-top: 1px solid rgba(255,255,255,0.35); padding-top: 7px;'
@@ -349,11 +360,27 @@ class TuxWetterDesklet extends Desklet.Desklet {
             style: 'font-size: 18px; color: rgba(255,255,255,0.78);'
         });
         statusLeft.add(this.versionLabel);
+        const forkBox = new St.BoxLayout({style: 'margin-top: 2px;'});
         this.forkLabel = new St.Label({
-            text: 'Fork von Tux-Wetter-KDE von Mastertac',
-            style: 'font-size: 12px; color: rgba(255,255,255,0.65); margin-top: 2px;'
+            text: 'Fork von Tux-Wetter-KDE von ',
+            style: 'font-size: 18px; color: rgba(255,255,255,0.78);'
         });
-        statusLeft.add(this.forkLabel);
+        forkBox.add(this.forkLabel);
+        const mastertacLink = new St.Button({
+            label: 'Mastertac',
+            style: 'font-size: 18px; color: #a9d8ff;',
+            can_focus: true,
+        });
+        mastertacLink.connect('clicked', () => {
+            try {
+                Gio.AppInfo.launch_default_for_uri('https://github.com/Mastertac2000/tux-wetter/releases', null);
+            } catch (e) {
+                global.logError('TuX-Wetter Link: ' + e);
+                this._notify(_('Link konnte nicht geöffnet werden.'));
+            }
+        });
+        forkBox.add(mastertacLink);
+        statusLeft.add(forkBox);
         statusBox.add(statusLeft);
         const statusSpacer = new St.Widget();
         statusSpacer.set_x_expand(true);
@@ -364,7 +391,7 @@ class TuxWetterDesklet extends Desklet.Desklet {
         });
         statusBox.add(this.lastUpdatedLabel);
         this.mainBox.add(statusBox);
-        
+
         this.setContent(this.card);
         this._draggable.inhibit = false;
         this.card.reactive = true;
@@ -910,7 +937,7 @@ class TuxWetterDesklet extends Desklet.Desklet {
     _fetchText(url) {
         const command = 'curl -fsSL --max-time 15 "' + url + '"';
         const result = GLib.spawn_command_line_sync(command);
-        if (!result[0] || !result[1]) {
+        if (!result[0] || result[3] !== 0 || !result[1] || !result[1].length) {
             throw new Error('Download fehlgeschlagen');
         }
         return result[1].toString();
@@ -984,7 +1011,9 @@ class TuxWetterDesklet extends Desklet.Desklet {
     _checkForUpdate(silentIfCurrent = false) {
         try {
             const remote = JSON.parse(this._fetchText(RAW_BASE_URL + 'metadata.json'));
-            if (!remote.version || Number(remote.version) <= Number(LOCAL_VERSION)) {
+            if (typeof remote.version !== 'string')
+                throw new Error('Versionsnummer fehlt');
+            if (compareVersions(remote.version, LOCAL_VERSION) <= 0) {
                 if (!silentIfCurrent) this._notify(_('Das Desklet ist aktuell.'));
                 return;
             }
@@ -992,7 +1021,7 @@ class TuxWetterDesklet extends Desklet.Desklet {
             this._notify(_('Update verfügbar: Version ') + remote.version);
             const dialog = new ModalDialog.ConfirmDialog(
                 _('Version %s ist verfügbar. Jetzt installieren?').format(remote.version),
-                () => this._installUpdate()
+                () => this._installUpdate(remote.version)
             );
             dialog.open();
         } catch (e) {
@@ -1001,16 +1030,21 @@ class TuxWetterDesklet extends Desklet.Desklet {
         }
     }
 
-    _installUpdate() {
+    _installUpdate(expectedVersion) {
         try {
             const files = ['desklet.js', 'metadata.json', 'settings-schema.json'];
+            const contents = files.map((file) => this._fetchText(RAW_BASE_URL + file));
+            const metadata = JSON.parse(contents[1]);
+            if (metadata.version !== expectedVersion || metadata.uuid !== this.metadata.uuid)
+                throw new Error('Update-Metadaten stimmen nicht mit der Prüfung überein');
+            JSON.parse(contents[2]);
             for (let i = 0; i < files.length; i++) {
-                const content = this._fetchText(RAW_BASE_URL + files[i]);
                 const path = GLib.build_filenamev([
                     this.metadata.path,
                     files[i]
                 ]);
-                GLib.file_set_contents(path, content);
+                if (!GLib.file_set_contents(path, contents[i]))
+                    throw new Error('Update-Datei konnte nicht gespeichert werden: ' + files[i]);
             }
             this._notify(_('Update installiert. Cinnamon lädt es beim nächsten Reload.'));
         } catch (e) {
@@ -1265,14 +1299,14 @@ class TuxWetterDesklet extends Desklet.Desklet {
                 (j.daily ? this._formatTemperature(j.daily.temperature_2m_max[0]) : '--') + ' / ' +
                 (j.daily ? this._formatTemperature(j.daily.temperature_2m_min[0]) : '--')
             );
-            
+
             if (j.daily) {
                 const sr = this._formatTime(j.daily.sunrise[0]);
                 const ss = this._formatTime(j.daily.sunset[0]);
                 this.sunriseLabel.set_text('Sonnenaufgang: ' + sr);
                 this.sunsetLabel.set_text('Sonnenuntergang: ' + ss);
             }
-            
+
             if (j.hourly && j.hourly.temperature_2m && j.hourly.weather_code) {
                 this.hourlyData = j.hourly;
                 const now = new Date();
@@ -1292,7 +1326,7 @@ class TuxWetterDesklet extends Desklet.Desklet {
                     }
                 }
             }
-            
+
             if (j.daily && j.daily.weather_code) {
                 for (let i = 0; i < this.dailyLabels.length; i++) {
                     if (i < j.daily.weather_code.length) {
