@@ -6,21 +6,16 @@ Wetterwarnungen sowie optionale Luftqualitäts-, Pollen- und Monddaten.
 
 **TuX-Wetter 0.x ist ein Fork von Tux-Wetter-KDE von Mastertac.**
 
-## Version 0.5
-
-- Kompatibilität mit **Linux Mint 27** und **Cinnamon 6.8.4** hinzugefügt.
-- Unterstützung für Cinnamon 6.6, 6.7 und 6.8 aktiviert.
-- Update-Zweig auf `main` wechselt für aktuelle Entwicklung.
-
 ## Version 0.4
 
 - Update-Bug für Linux Mint 22.3 mit Cinnamon 6.6.9 gefixt.
 - 5-Tage-Übersicht gefixt.
+- Kompatibilität mit **Linux Mint 27** und **Cinnamon 6.8.4** hinzugefügt.
 
 ## Voraussetzungen
 
 - Linux mit **Cinnamon 6.6.x bis 6.8.x**
-- getestet mit **Linux Mint 22.3 / Cinnamon 6.6.9** und **Linux Mint 27 / Cinnamon 6.8.4**
+- getestet mit **Linux Mint 22.3** (Cinnamon 6.6.9) und **Linux Mint 27** (Cinnamon 6.8.4)
 - funktionierendes Internet
 - `curl`
 - ein Wetterdienst ohne Registrierung:
@@ -47,7 +42,7 @@ sudo apt install curl
 
 ## Installation über die Cinnamon-Oberfläche
 
-1. Lade `Tux-Wetter-Cinnamon-0.5.zip` herunter.
+1. Lade `Tux-Wetter-Cinnamon-0.4.zip` herunter.
 2. Öffne **Systemeinstellungen → Desklets**.
 3. Öffne das Menü **Hinzufügen** beziehungsweise **Aus Datei installieren**.
 4. Wähle die ZIP-Datei aus.
@@ -64,7 +59,7 @@ Wenn deine Cinnamon-Version keinen Dateiimport anbietet:
 
 ```bash
 mkdir -p ~/.local/share/cinnamon/desklets
-unzip Tux-Wetter-Cinnamon-0.5.zip -d ~/.local/share/cinnamon/desklets
+unzip Tux-Wetter-Cinnamon-0.4.zip -d ~/.local/share/cinnamon/desklets
 ```
 
 Danach **Systemeinstellungen → Desklets** öffnen, TuX-Wetter aktivieren und

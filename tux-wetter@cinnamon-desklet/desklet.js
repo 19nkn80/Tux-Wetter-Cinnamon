@@ -8,9 +8,9 @@ const ModalDialog = imports.ui.modalDialog;
 const Settings = imports.ui.settings;
 
 const REPOSITORY = '19nkn80/Tux-Wetter-Cinnamon';
-const UPDATE_BRANCH = 'main';
+const UPDATE_BRANCH = 'v0.3';
 const RAW_BASE_URL = 'https://raw.githubusercontent.com/' + REPOSITORY + '/' + UPDATE_BRANCH + '/';
-const LOCAL_VERSION = '0.5';
+const LOCAL_VERSION = '0.4';
 const GRADIENT_STRIP_COUNT = 100;
 const CARD_WIDTH = 760;
 const CARD_HEIGHT = 730;
