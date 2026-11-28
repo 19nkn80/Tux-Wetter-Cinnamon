@@ -4,18 +4,27 @@ TuX-Wetter ist ein deutschsprachiges Wetter-Desklet für Cinnamon. Es zeigt
 aktuelle Wetterdaten, Stunden- und Tagesprognosen, mehrere gespeicherte Orte,
 Wetterwarnungen sowie optionale Luftqualitäts-, Pollen- und Monddaten.
 
-**TuX-Wetter 0.x ist ein Fork von Tux-Wetter-KDE von Mastertac.**
+**TuX-Wetter 0.x ist ein Fork von Tux-Wetter-KDE von
+[Mastertac](https://github.com/Mastertac2000/tux-wetter/releases).**
+
+## Version 0.5
+
+- Einheitliche Schriftgröße im Versionshinweis und Link zu Mastertac.
+- Updates aus dem festen Ordner `latest-release`; das ZIP trägt weiterhin die Versionsnummer.
+- Für den Wechsel von Version 0.4 ist eine einmalige manuelle Installation nötig.
 
 ## Version 0.4
 
 - Update-Bug für Linux Mint 22.3 mit Cinnamon 6.6.9 gefixt.
 - 5-Tage-Übersicht gefixt.
-- Kompatibilität mit **Linux Mint 27** und **Cinnamon 6.8.4** hinzugefügt.
+- Cinnamon 6.8 in den Metadaten eingetragen.
 
 ## Voraussetzungen
 
 - Linux mit **Cinnamon 6.6.x bis 6.8.x**
-- getestet mit **Linux Mint 22.3** (Cinnamon 6.6.9) und **Linux Mint 27** (Cinnamon 6.8.4)
+- getestet mit **Linux Mint 22.3** (Cinnamon 6.6.9) und LMDE 7
+- Cinnamon 6.8 ist in den Metadaten eingetragen; der Betrieb unter Linux Mint 27
+  mit Cinnamon 6.8.4 ist noch nicht bestätigt
 - funktionierendes Internet
 - `curl`
 - ein Wetterdienst ohne Registrierung:
@@ -42,7 +51,7 @@ sudo apt install curl
 
 ## Installation über die Cinnamon-Oberfläche
 
-1. Lade `Tux-Wetter-Cinnamon-0.4.zip` herunter.
+1. Lade [`Tux-Wetter-Cinnamon-0.5.zip`](latest-release/Tux-Wetter-Cinnamon-0.5.zip) herunter.
 2. Öffne **Systemeinstellungen → Desklets**.
 3. Öffne das Menü **Hinzufügen** beziehungsweise **Aus Datei installieren**.
 4. Wähle die ZIP-Datei aus.
@@ -59,7 +68,7 @@ Wenn deine Cinnamon-Version keinen Dateiimport anbietet:
 
 ```bash
 mkdir -p ~/.local/share/cinnamon/desklets
-unzip Tux-Wetter-Cinnamon-0.4.zip -d ~/.local/share/cinnamon/desklets
+unzip -o Tux-Wetter-Cinnamon-0.5.zip -d ~/.local/share/cinnamon/desklets
 ```
 
 Danach **Systemeinstellungen → Desklets** öffnen, TuX-Wetter aktivieren und
@@ -98,21 +107,22 @@ Zusätzlich funktionieren Mausrad und rechte Maustaste am Desklet.
 In den Optionen gibt es zusätzlich **Auf Updates prüfen**. Wenn GitHub eine
 höhere Version meldet, erscheint zuerst ein Hinweis und danach ein Dialog mit
 **Updaten** und **Abbrechen**. Beim Updaten werden die drei Desklet-Dateien
-aus dem GitHub-Updatezweig geladen. Cinnamon muss anschließend neu geladen
-werden.
+aus dem Ordner `latest-release` des GitHub-Zweigs `Mint-27-Cinnamon-6.8.4`
+geladen. Die ZIP-Datei in diesem Ordner enthält die jeweilige Versionsnummer.
+Cinnamon muss anschließend neu geladen werden.
 
 Beim Start prüft das Desklet automatisch, ob auf GitHub eine neuere Version
 vorliegt. Die aktuell installierte Version wird oben im Desklet angezeigt.
-Wenn die Aktualisierung nicht funktioniert, installiere die aktuellen Dateien
-manuell. Persönliche Desklet-Einstellungen bleiben dabei erhalten:
+Version 0.4 verwendet noch den alten Updatezweig und muss einmalig manuell auf
+Version 0.5 aktualisiert werden. Wenn die Aktualisierung nicht funktioniert,
+installiere das aktuelle ZIP ebenfalls manuell. Persönliche
+Desklet-Einstellungen bleiben dabei erhalten:
 
 ```bash
-curl -fL https://github.com/19nkn80/Tux-Wetter-Cinnamon/archive/refs/heads/main.zip \
-  -o /tmp/tux-wetter-main.zip
-unzip -o /tmp/tux-wetter-main.zip -d /tmp
+curl -fL https://github.com/19nkn80/Tux-Wetter-Cinnamon/raw/refs/heads/Mint-27-Cinnamon-6.8.4/latest-release/Tux-Wetter-Cinnamon-0.5.zip \
+  -o /tmp/Tux-Wetter-Cinnamon-0.5.zip
 mkdir -p ~/.local/share/cinnamon/desklets/tux-wetter@cinnamon-desklet
-cp /tmp/Tux-Wetter-Cinnamon-main/{desklet.js,metadata.json,settings-schema.json} \
-  ~/.local/share/cinnamon/desklets/tux-wetter@cinnamon-desklet/
+unzip -o /tmp/Tux-Wetter-Cinnamon-0.5.zip -d ~/.local/share/cinnamon/desklets
 cinnamon --replace &
 ```
 
@@ -150,7 +160,7 @@ journalctl --user -b --no-pager | grep -i cinnamon
 
 Die Liste enthält nur die fünf Tage ab morgen. „Heute“ steht bereits im
 aktuellen Wetterbereich oben im Desklet. Die Wochentage werden anhand des
-Systemdatums berechnet. Prüfe, ob die Versionsanzeige **TuX-Wetter 0.4**
+Systemdatums berechnet. Prüfe, ob die Versionsanzeige **TuX-Wetter 0.5**
 meldet. Lade Cinnamon neu, falls die Anzeige nach der Aktualisierung noch
 veraltet aussieht.
 
@@ -179,6 +189,10 @@ Die drei Paketdateien sind:
 - `desklet.js`
 - `metadata.json`
 - `settings-schema.json`
+
+Für eine neue Version müssen diese drei Dateien im Ordner `latest-release`
+aktualisiert und dort als `Tux-Wetter-Cinnamon-<Version>.zip` verpackt werden.
+Versionsnummern in `desklet.js` und `metadata.json` müssen übereinstimmen.
 
 Das Projekt ist auf GitHub verfügbar:
 
