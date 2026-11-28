@@ -363,7 +363,8 @@ class TuxWetterDesklet extends Desklet.Desklet {
         const forkBox = new St.BoxLayout({style: 'margin-top: 2px;'});
         this.forkLabel = new St.Label({
             text: 'Fork von Tux-Wetter-KDE von ',
-            style: 'font-size: 18px; color: rgba(255,255,255,0.78);'
+            style: 'font-size: 18px; color: rgba(255,255,255,0.78);',
+            y_align: Clutter.ActorAlign.CENTER,
         });
         forkBox.add(this.forkLabel);
         const mastertacLabel = new St.Label({
@@ -374,6 +375,7 @@ class TuxWetterDesklet extends Desklet.Desklet {
             child: mastertacLabel,
             style: 'padding: 3px 6px;',
             can_focus: true,
+            y_align: Clutter.ActorAlign.CENTER,
         });
         mastertacLink.connect('button-press-event', (_actor, event) => {
             if (event.get_button() !== 1) return Clutter.EVENT_PROPAGATE;
